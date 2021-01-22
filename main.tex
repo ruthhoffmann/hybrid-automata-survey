@@ -1,0 +1,73 @@
+\documentclass[format=acmsmall]{acmart}
+\acmJournal{CSUR}
+
+\input{preamble}
+
+\title{A Unified Look at Stochastic Hybrid Automata and their Abstractions}
+\author{Ruth Hoffmann}
+\affiliation{University of Glasgow}
+\email{ruth.hoffmann@glasgow.ac.uk}
+\author{Alice Miller}
+\affiliation{University of Glasgow}
+\email{alice.millerglasgow.ac.uk}
+\author{Gethin Norman}
+\affiliation{University of Glasgow}
+\email{gethin.norman@glasgow.ac.uk}
+
+\begin{document}
+
+
+
+\begin{abstract}
+Formal modelling and verification are important techniques that allow us to analyse complex systems. The particular modelling paradigm used depends on the nature of the system to be modelled and the aspects of its behaviour that we want to analyse. For example - is behaviour discrete or continuous? Synchronous or asynchronous? Deterministic/non-deterministic or probabilistic? Some systems demonstrate a combination of behaviour types and are thus more complex to model and impossible to verify without the application of sophisticated abstraction techniques. Examples of this type of  modelling formalism are Hybrid Automata and Stochastic Hybrid Automata.  In this paper we survey both non-stochastic and stochastic hybrid automata, together with suitable abstraction techniques which allow for verification using  a variety of tools.
+\end{abstract}
+
+\maketitle
+%\tableofcontents
+
+\section{Introduction}
+\label{sec:intro}
+\input{intro}
+
+\section{Hybrid Automata}
+\label{sec:hybrid}
+\input{hybrid}
+
+\section{Stochastic Hybrid Automata}
+\label{sec:stoch}
+\input{stochastic}
+
+
+\section{Further Background Material}
+\label{sec:background}
+\input{background}
+
+\section{Abstractions of Hybrid Automata}
+\label{sec:abs}
+\input{abstract}
+
+\section{Abstractions of Probabilistic Hybrid Automata}
+\label{sec:propabs}
+\input{probabilistic}
+
+\section{Conclusions}
+\label{sec:conclusion}
+\input{conclusion}
+
+
+\section{Acknowledgements}
+This work was supported by the Engineering and Physical Sciences Research Council [grant number EC/P51133X/1].
+%\section{Tools}
+%\label{sec:tools}
+%\input{tools}
+
+%\nocite*
+\bibliographystyle{ACM-Reference-Format.bst}
+% cite u like lib
+\bibliography{library}
+% this is the mendeley copied library
+%\bibliography{copylibrary}
+% mendeley orig lib
+%\bibliography{../../Desktop/PhD/Papers/Bibliography/library}
+
+\end{document}

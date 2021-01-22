@@ -1,0 +1,162 @@
+We will first discuss whether it is possible to abstract a given PHA. For that we introduce the probabilistic equivalent bisimulation relation, and we then discuss out several classes which can be abstracted to a PTS.
+
+\begin{defi}[PHA as PTS]
+\label{def:pha2pts}
+The semantics of a PHA $\mathcal{H}=(V,L,A,\Init,\Inv,E,f,t)$ can be described in terms of a probabilistic transition system as follows; $\mathcal{P}_H=(Q,Q_{0},L,A,t)$ is the underlying transition system if
+\begin{itemize}
+    \item $Q=L\times\val(V)$
+    \item $Q_{0} = \Init$
+    \item $A=A\cup\mathbb{R}$
+    \item $t=\bigcup_{\delta\in\mathbb{R}}t_{\delta}\cup \bigcup_{a\in A}t_{a}$ for $a\in A$ and $\delta\in\mathbb{R}_{\geq 0}$ with
+    \begin{itemize}
+        \item $t_{\delta}\subseteq Q\times\mathbb{R}_{\geq0}\times\mu(Q)$, is the largest set such that $((\ell,v),\delta,\{(\ell',v')\mapsto1\})\in t_{\delta}$ implies that $\ell=\ell'$ and $v'\in \Inv(\ell)$.
+        \item $t_{a}\subseteq Q\times A \times\mu(Q)$, is the largest set of transitions such that $((\ell,v),a,p)\in t_{a}$ implies that there exists a probabilistic edge $e=(\ell,a,\ell')\in E$ with $t(\ell,a)=p_{1}(\ell')$ such that $v\in g(e)$ and there exists $[v_{1},\ldots,v_{n}]\in Bundle(v,p)$ such that for each $(\ell',v')\in Q$ \[p_{1}(\ell',v') = \sum_{1\leq i\leq n \text{s.t.} v'=v_{i}} p(\ell')\]
+    \end{itemize}
+\end{itemize}
+\end{defi}
+
+To define probabilistic simulation and bisimulation, we need to define what it means for distributions to be equivalent.
+
+\begin{defi}[Weight function \cite{Jonsson1991}]
+Let $R\subseteq S_{1} \times S_{2}$ be a relation between the sets $S_{1},S_{2}$ and $p_{1},p_{2}$ be distributions such that $p_{1}\in\mu(S_{1})$ and $p_{2}\in\mu(S_{2})$. A \emph{weight function}
+ $w:S_{1}\times S_{2}\rightarrow [0,1]$ with respect to $R$ is a function such that for all $s_{1}
+ \in S_{1}$, $s_{2}\in S_{2}$
+ \begin{itemize}
+     \item if $w(s_{1},s_{2})>0$ then $(s_{1},s_{2})\in R$ and
+     \item $\sum_{s'\in S_{2}} (s_{1},s') = p_{1}(s_{1})$ and $\sum_{s'\in S_{1}} (s',s_{2}) = p_{2}(s_{2})$.
+ \end{itemize}
+\end{defi}
+
+If there exists a weight function for $p_{1}\in\mu(S_{1})$, $p_{2}\in\mu(S_{2})$ with respect to $R\subseteq S_{1}\times S_{2}$, we write $p_{1} R p_{2}$.
+
+\begin{defi}[Probabilistic Simulation \cite{Jonsson1991,Segala1995}]
+A \emph{simulation} of a probabilistic transition system $\mathcal{P} =(Q,Q_{0},L,A,t)$ is a preorder $\sim^{P}\subset Q\times Q$ such that for each $q_{1}\sim q_{2}$:
+\begin{itemize}
+    \item $L(q_{1}) = L(q_{2})$ and
+    \item if $t(q_{1})=(a,p_{1})$ then $t(q_{2})=(a,p_{2})$ for some $p_{2}$ such that $p_{1} R p_{2}$.
+\end{itemize}
+\end{defi}
+
+
+\begin{defi}[Probabilistic Bisimulation \cite{Larsen1989,Segala1995}]
+A \emph{bisimulation} of a probabilistic transition system $\mathcal{P}=(Q,Q_{0},L,A,t)$ is an equivalence relation $\sim_{B}^{P}\subseteq Q\times Q$ such that for each $q_{1}\sim q_{2}$,
+\begin{itemize}
+    \item $L(q_{1})=L(q_{2})$
+    \item if $t(q_{1})=(a,p_{1})$ then $t(q_{1})=(a,p_{1})$ for some $p_{2}$ such that $p_{1} R p_{2}$ and
+    \item if $t(q_{2})=(a,p_{2}')$ then $t(q_{1})=(a,p_{1}')$ for some $p_{1}'$ such that $p_{1}' R p_{2}'$.
+\end{itemize}
+\end{defi}
+
+\begin{prop}[\cite{Sproston2001}]
+Let $\mathcal{P} =(Q,Q_{0},L,A,t)$ be a probabilistic transition system. Two states $q_{1},q_{2}\in Q$ are bisimilar if and only if there exists an equivalence relation $R$ on the set of states such that $(q_{1},q_{2})\in Q$ and for all states $q,q'\in Q$ such that $(q,q')\in R$ we have
+\begin{itemize}
+    \item $L(s)=L(s')$ and
+    \item if $t(s)=(a,p)$ then $t(s')=(a,p')$ for some $p'$ such that $p[C] = p'[C]$ for all equivalence classes $C\in S/_{R}$.
+\end{itemize}
+\end{prop}
+
+
+\subsection{Can we abstract a given Probabilistic Hybrid Automaton?}
+To find the abstract probabilistic transition system of a PHA we need to see whether there is an equivalent HA which can be abstracted into a transition system. For that we first construct a HA which corresponds to a given PHA. Let $\mathcal{H}=(V,L,A,\Init,\Inv,E,f,t)$ be a probabilistic hybrid automaton. We can say that a hybrid automaton is a PHA where each probabilistic transition $p\in t(\ell,a)$ has $p=1$.
+
+The HA induced by the PHA $\mathcal{H}=(V,L,A,\Init,\Inv,E,f,t)$ is $ind(\mathcal{H})=(V,L,A\times \mu(L)\times r,\Init,\Inv,E,f,ind(t))$ where we define $ind(t)$ to be the smallest set of transitions such that if $t(\ell,a)=p$ with $e=(\ell,a,\ell')$ with $g(e)$ and $r(e)$, then for each $\ell'\in support(p)$ there exists $ind(t(\ell,a))=1:(\ell')$.
+The set of actions now consists of a tuple of the action, a distribution over the locations and the reset function \cite{Sproston2014}.
+
+
+\begin{prop}[\cite{Sproston2014}]
+Let $\sim$ be a bisimulation on the transition system underlying $ind(\mathcal{H})$. Then $\sim$ is a probabilistic bisimultation on the PTS underlying $\mathcal{H}$.
+\end{prop}
+
+\begin{lem}[\cite{Sproston2000}]
+Let $\mathcal{M}$ be a probabilistic multisingular automaton then Region equivalence $\equiv^{R}$ is a finite bisimulation of the time-abstract probabilistic transition system $S_\mathcal{M}$.
+\end{lem}
+
+
+\begin{lem}[\cite{Sproston2000}]
+Let $\mathcal{O}$ be a probabilistic o-minimal hybrid automata then $\mathcal{O}$ has a finite bisimulation quotient.
+\end{lem}
+
+\begin{cor}[\cite{Sproston2000}]
+The PBTL model checking problems for probabilistic multisingular automata and probabilistic o-minimal hybrid automata are decidable.
+\end{cor}
+
+\subsubsection{Abstracting PTAs}
+\label{sec:dpta}
+\input{DPTA}
+
+\subsection{Running Example}
+We will have a running example of a probabilistic HA which will illustrate the techniques introduced in the upcoming sections. A general definition of this automaton is given here; restrictions on the various components will be introduced when necessary.
+\begin{ex}
+    \label{ex:abs}
+We look at a simplistic example of a unmanned aerial vehicle (UAV) taking off to a specific height $h$, moving forward a given distance $l$ and then landing again. The UAV can move forward with two different speeds and when landing there is a possibility that it might crash instead. One of the reasons why this model is simplistic is that we assume no acceleration in the modes.
+
+Note that this example is a rectangular probabilistic hybrid automaton.
+\begin{figure}[H]
+     \begin{center}
+         \begin{tikzpicture}[node distance=3.1cm, every state/.style={rectangle}]
+             \node [initial, state] (s0) {$\ell_{0}$\\$\dot{x}=0$\\$\dot{z}=0$};
+             \node [state] (s1) [right of=s0] {$\ell_{1}$\\$\dot{z}=v_{z,1}$\\$z\leq h$};
+             \node [state] (s2) [above right of=s1,yshift=-6mm,xshift=5mm] {$\ell_{2}$\\$\dot{x}=v_{x,1}$\\$0\leq\dot{z}\leq v_{z,2}$\\$x\leq l$\\$h-\varepsilon\leq z\leq h+\varepsilon$};
+             \node [state] (s3) [below right of=s1,yshift=6mm,xshift=5mm] {$\ell_{3}$\\$\dot{x}=v_{x,2}$\\$0\leq\dot{z}\leq v_{z,2}$\\$x\leq l$\\$h-\varepsilon\leq z\leq h+\varepsilon$};
+             \node [state] (s4) [below right of=s2,yshift=5mm,xshift=5mm] {$\ell_{4}$\\$\dot{z}=-v_{z}$\\$z\geq 0$};
+             \node [state] (s5) [right of=s4,xshift=3mm] {$\ell_{5}$};
+
+             \path[->] (s0) edge node [above] {1:(Take Off)} (s1)
+                (s1) edge node [left,yshift=2mm] {0.6:(Move,$z=h$)} (s2)
+                    edge node [left,yshift=-2mm] {0.4:(Move,$z=h$)} (s3)
+                (s2) edge node [left,yshift=-1mm] {1:(Stop,$x=l$)} (s4)
+                (s3) edge node [left,yshift=1mm] {1:(Stop,$x=l$)} (s4)
+                (s4) edge node [above] {0.01:(Land,$z=0$,\\$x:=0,z:=0$)} (s5)
+                    edge [bend left=90] node [below] {0.99:(Land,$z=0$,$x:=0,z:=0$)} (s0);
+         \end{tikzpicture}
+         \caption{Running example of a UAV.}
+         \label{fig:runex}
+     \end{center}
+ \end{figure}
+The different component of the model in Figure~\ref{fig:runex} are
+\begin{align*}
+    V & = \{x,z\} \\
+    L & = \{\ell_{0},\ell_{1},\ell_{2},\ell_{3},\ell_{4},\ell_{5}\} \\
+    A & = \{\text{Take Off, Move, Stop, Land}\} \\
+    \Init & = \{(\ell_{0},(0,0))\} \\
+    \Inv(\ell_{0}) & = \Inv(\ell_{5}) = (\mathbb{R},\mathbb{R})\\
+    \Inv(\ell_{1}) & = (\mathbb{R},(-\infty,h])\\
+    \Inv(\ell_{2}) & = \Inv(\ell_{3}) = ((-\infty,l],[h-\varepsilon,h+\varepsilon])\\
+    \Inv(\ell_{4}) & = (\mathbb{R},[0,\infty))\\
+    E & = \{e_{0}=(\ell_{0},\text{Take Off},\ell_{1}), e_{1}=(\ell_{1},\text{Move},\ell_{2}), e_{2}=(\ell_{1},\text{Move},\ell_{3}), & \\
+    & e_{3}=(\ell_{2},\text{Stop},\ell_{4}), e_{4}=(\ell_{3},\text{Stop},\ell_{4}), e_{5}=(\ell_{4},\text{Land},\ell_{5}), e_{6}=(\ell_{4},\text{Land},\ell_{5}) \} \\
+    r(e_{0}) & = r(e_{1}) = r(e_{2}) = r(e_{3}) = r(e_{4}) = (\mathbb{R},\mathbb{R}) \\
+    r(e_{5}) & = r(e_{6}) = (0,0) \\
+    g(e_{0}) & = (\mathbb{R},\mathbb{R}) \\
+    g(e_{1}) & = g(e_{2}) = (\mathbb{R},h) \\
+    g(e_{3}) & = g(e_{4}) = (l,\mathbb{R}) \\
+    g(e_{5}) & = g(e_{6}) = (\mathbb{R},0) \\
+    f(\ell_{0}) & = f(\ell_{5}) = \{\dot{x} = 0,\dot{z} = 0 \} \\
+    f(\ell_{1}) & = \{\dot{x} = 0,\dot{z} = v_{z,1}\} \\
+    f(\ell_{2}) & = \{\dot{x} = v_{x,1},\dot{z} = [0,v_{z,2}]\} \\
+    f(\ell_{3}) & = \{\dot{x} = v_{x,2},\dot{z} = [0,v_{z,2}]\} \\
+    f(\ell_{4}) & = \{\dot{x} = 0,\dot{z}=-v_{z,1}\} \\
+    t(\ell_{0},\text{Take Off}) & = \{1: \ell_{1}\} \\
+    t(\ell_{1},\text{Move}) & = \{0.6: \ell_{2}, 0.4: \ell_{3}\} \\
+    t(\ell_{2},\text{Stop}) & = t(\ell_{3},\text{Stop}) = \{1: \ell_{4}\} \\
+    t(\ell_{4},\text{Land}) & = \{0.99: \ell_{0}, 0.01:\ell_{5}\}
+\end{align*}
+\end{ex}
+%\subsection{Abstracting (discrete) Probabilistic Timed Automata}
+
+
+
+\subsection{Translating between Different Types of Probabilistic Hybrid Automata}
+\input{PHAtrans}
+
+\subsection{Abstracting Stochastic Hybrid Automata}
+\input{stochabs}
+
+\subsection{Abstracting Discrete Time Stochastic Hybrid Systems}
+\input{dtshsabs}
+
+%\cite{Abate2010,Amin2006,Hahn2011,Hofbaur2002,Julius2009,Kattenbelt2009,Soudjani2011a,Bujorianu2004,Koutsoukos2006,Hu2000,Prandini2006}
+
+%\cite{Hahn2011} uses game-theory to produce the abstraction and an optimal choice.
+
+%\cite{Kattenbelt2009} uses a mix of predicate and CEGAR.

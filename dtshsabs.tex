@@ -1,0 +1,28 @@
+In this section we will show how to abstract a DTSHS $\mathcal{D}=(L,n,\Init,T_x,T_q,R)$ to a discrete time markov chain, which then can be model checked using the usual techniques.
+
+Before we get to the abstraction we give a couple preliminary definitions and notations.
+
+\begin{defi}[Partition of the State Space]
+Let $\mathcal{Q}=\bigcup_{\ell\in L}\{\ell\} \times Q_{\ell}$ be the state space, where $Q_{\ell}\subset \mathbb{R}^{n(\ell)}$ (see the Definition~\ref{def:DTSHS} for $n$) is a compact
+set, with $Q_{\ell} = \bigcup_{i=1}^{m_{\ell}} Q_{\ell,i}$ having a finite partition and $Q_{\ell,i}\in \mathcal{B}(\mathbb{R}^{n(\ell)})$ $Q_{\ell,i}\cap Q_{\ell,j} = \emptyset$ for all
+$i\neq j$, $m_{\ell}\in\mathbb{N}$ is number of partitions of the continous domain of $\ell$.
+\end{defi}
+
+\begin{defi}[Partition Representative]
+We define $r_{\ell}:\mathcal{B}(\mathbb{R}^{n(\ell)})\rightarrow\mathbb{R}^{n(\ell)}$ to be the function returning the \emph{representative point} $r_{\ell}(Q_{\ell,i})$ of the partition $Q_{\ell,i}$, which is a randomly chosen point given
+ $Q_{\ell,i}\in\mathcal{B}(\mathbb{R}^{n(\ell)})$ and $\ell\in L$.
+\end{defi}
+
+
+\begin{defi}[DTSHS to DTMC Abstraction \cite{Abate2010,Abate2011}]
+Let $\mathcal{D}=(L,n,\Init,T_x,T_q,R)$ be a DTSHS. Then the DTMC associated to $\mathcal{D}$ $\mathcal{C}=(\mathcal{Q}_{\delta},\Init_{\delta},t_{\delta})$ is defined as
+\begin{itemize}
+    \item $\mathcal{Q}_{\delta}=\{(\ell,i) : \ell \in L, i\in\{1,\ldots,m_{\ell}\}\}$ is the state space, $m_{\ell}\in \mathbb{N}$;
+    \item $\Init_{\delta}(\ell,i) = \int_{Q_{\ell,i}} \Init(\ell,x) dx$ is the probability distribution for the initial state;
+    \item $t_{\delta}((\ell,i),(\ell',i')) = T(\ell'\times Q_{\ell',i'}, (\ell,r_{\ell}(Q_{\ell,i})))$ is the transition probability matrix.
+\end{itemize}
+\end{defi}
+
+%\begin{defi}[Gridding]
+%Let $\delta_{\ell,i} = \sup\{ \| x-x'\| : x,x'\in Q_{\ell,i}\}$ be the \emph{diameter} of $Q_{\ell,i}$. We also define $\delta=\max_{i\in\{1,\ldots,m_{\ell},\ell\in L} \delta_{\ell,i}$ to be the \emph{grid size parameter},
+%\end{defi}

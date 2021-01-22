@@ -1,0 +1,103 @@
+We introduce the bisimulation of non-probabilistic systems, as it can be used on the underlying non-deterministic structure of a PHA to determine whether the PHA can be abstracted. A bisimulation is a property preserving equivalence relation on the states.
+
+A hybrid system $\mathcal{A}=(V,L,A,\Init,Inv,E,f)$ generates a transition system $\mathcal{T}_{\Sigma,\mathcal{A}}=(Q,Q_{0},\Pi,t,\models)$ according to a finite set of subsets of $\mathbb{R}^{n}$, denoted $\Sigma$, where $n$ is the number of continuous variables \cite{Alur2000}. Then
+\begin{itemize}
+\item{$Q=L\times \val(V)$ is the set of states;}
+\item{$Q_{0}=\Init$ is the set of initial states;}
+\item{$\Pi=L\cup\Sigma$ is the set of propositions;}
+\item{$(\ell,x)\models\pi$ is the satisfaction relation where $\ell\in L$ and then $\pi\in L$ if and only if $\ell = \pi$, or $\pi\in\Sigma$ if and only if $x\in\pi$;}
+\item{$t=(\bigcup_{e\in E}\overset{e}{\rightarrow})\cup \overset{\tau}{\rightarrow}$ is the
+transition function, with each $\overset{e}{\rightarrow}$ being the discrete transitions, which are
+defined as $(\ell,x)\overset{e}{\rightarrow}(\ell',x')$ for $e=(\ell,a,\ell')\in E$ for any
+$a\in A$ if and only if $x\in g(e)$ and $x' \in r(e)$ and $\overset{\tau}{\rightarrow}$ are
+continuous transitions, which are defined as
+$(\ell_{1},x_{1})\overset{\tau}{\rightarrow}(\ell_{2},x_{2})$ if and only if $\ell_{1}=\ell_{2}$,
+and $\exists \delta \in \mathbb{R}^{+}\setminus\{ 0\}$ and there is a differentiable curve
+$x:[0,\delta]\rightarrow \mathbb{R}^{n}$ with $x(0)=x_{1}$, $x(\delta)=x_{2}$ and
+$\forall t\in[0,\delta]$ $x(t)\in Inv(\ell_{1})$, $\forall t\in (0,\delta)$
+$\dot{x}(t)\in f(\ell_{1})$ .}
+\end{itemize}
+
+
+We need to show that the constructed transition system still preserves the properties accordingly. For that we are looking at bisimulations to show that in fact we can still check CTL or LTL properties, through partitioning the state space.
+
+\begin{defi}[Equivalence Relation on States]
+An \emph{equivalence relation} $\sim\subseteq Q\times Q$ on the state space of a transition system $\mathcal{T}$ is a proposition preserved for all states $p,q\in Q$ and all propositions $\pi\in\Pi$, if $p\sim q$ and $p\models\pi$, then $q\models\pi$.
+\end{defi}
+
+So $\llbracket \pi\rrbracket$, the set of states satisfying the property $\pi$, can be seen as the union of equivalence classes.
+
+\begin{defi}[Quotient Transition System]
+Given a proposition preserving equivalence relation $\sim$, a \emph{quotient transition system} $\mathcal{T}/_{\sim}=(Q/_{\sim},Q_{0}/_{\sim},\Pi,t_{\sim},\models_{\sim})$ consists of
+\begin{itemize}
+\item{$Q/_{\sim}$ the quotient space, the set of equivalence classes;}
+\item{$t_{\sim}$ the transition relation, for $P_{1},P_{2}\in Q/_{\sim}$ we have $t_{\sim}(P_{1})=P_{2}$ if and only if there exists two states $q_{1}\in P_{1}$ and $q_{2}\in P_{2}$ such that $t(q_{1})=q_{2}$.}
+\item{$\models_{\sim}$ the satisfaction relation, where for $P\in Q/_{\sim}$ $P\models_{\sim}\pi$ if and only if $\exists p\in P$ such that $p\models \pi$.}
+\end{itemize}
+\end{defi}
+
+For any set of states $P$, let $P/_{\sim}$ denote the collection of all equivalence classes that intersect $P$.
+
+\begin{defi}[Bisimulation \cite{Roggenbach2000}]
+Let $\mathcal{T}=(Q,Q_{0},\Pi,t,\models)$ be a transition system. A proposition preserving equivalence relation $\sim_{B}$ on $Q$ is a \emph{bisimulation} of $\mathcal{T}$ if for all states $p,q\in Q$ if $p \sim_{B} q$, then for all states $p'\in Q$ if $t(p)=p'$, $\exists q'\in Q$ such that $t(q)=q'$ and $p'\sim_{B} q'$.
+\end{defi}
+
+If $\sim_{B}$ is a bisimulation, then the quotient transition system $\mathcal{T}/_{\sim_{B}}$is called a \emph{bisimulation quotient} of $\mathcal{T}$.
+
+\begin{thm}[\cite{Browne1988}]
+Let $\mathcal{T}$ be a transition system and let $\sim_{B}$ be a bisimulation of $\mathcal{T}$. Then $\mathcal{T}$ satisfies the CTL formula $\phi$ if and only if the bisimulation quotient $\mathcal{T}/_{\sim_{B}}$ satisfies $\phi$.
+\end{thm}
+
+We can construct the bisimulation quotient algorithmically, as shown in Algorithm~\ref{alg:bisim}.
+
+\begin{algorithm}[H]
+$Q/_{\sim_{B}} := \{ \llbracket \pi \rrbracket : \pi \in \Pi\}$\;
+\While{$\exists P,P'\in Q/_{\sim_{B}}$ such that $\emptyset\subset P\cap Pre(P')\subset P$}{
+    $P_{1}:=P\cap Pre(P')$\;
+    $P_{2}:=P\setminus Pre(P')$\;
+    $Q/_{\sim_{B}}:=(Q/_{\sim_{B}}\setminus\{P\})\cup\{P_{1},P_{2}\}$\;
+}
+\Return{$Q/_{\sim_{B}}$}
+\caption{Bisimulation algorithm \cite{Bouajjani,Alur2000}}
+\label{alg:bisim}
+\end{algorithm}
+
+To show that the CTL model checking problem can be decided for a given transition system $\mathcal{T}$, we can check whether the algorithm above terminates.
+
+\begin{defi}[Region Equivalence]
+Two vectors $x=(x_{1},\ldots,x_{n})$ and $y=(y_{1},\ldots,y_{n})$ in $\mathbb{R}^{n}$ are \emph{region equivalent} denoted as $x\sim^{R}y$ if
+\begin{itemize}
+    \item{For all $1\leq i \leq n$ we have either both $\lfloor x_{i}\rfloor = \lfloor y_{i}\rfloor$ and $\lceil x_{i}\rceil = \lceil y_{i}\rceil$ or both $\lceil x_{i}\rceil > C_{i}$ and $\lceil y_{i}\rceil>C_{i}$, where $C_{i}$ is the largest integer that the $i$-th component of a vector is evaluated to in a hybrid automaton $\mathcal{A}$.}
+    \item{For all $1\leq i,j \leq n$, if $\lceil x_{i}\rceil \leq C_{i}$ and $\lceil x_{j}\rceil \leq C_{j}$ then $x_{i}-\lfloor x_{i}\rfloor \leq x_{j}-\lfloor x_{j}\rfloor$ if and only if $y_{i}-\lfloor y_{i}\rfloor \leq y_{j}-\lfloor y_{j}\rfloor$.}
+\end{itemize}
+\end{defi}
+
+In a hybrid automaton we say that two states $(\ell_{1},x_{1}), (\ell_{2},x_{2})$ are region equivalent $(\ell_{1},x_{1})\sim^{R}_{\mathcal{A}}(\ell_{2},x_{2})$ if $\ell_{1}=\ell_2$ and $x_{1}\sim^{R}x_{2}$.
+
+\begin{thm}[\cite{Henzinger2000}]
+Let $\mathcal{A}$ be a timed automaton and let $\Sigma$ be a finite set of rectangular sets. Then the region equivalence relation $\sim_{H,\Sigma}^{R}$ is a bisimulation of the transition system $\mathcal{T}_{\mathcal{A},\Sigma}$.
+\end{thm}
+
+\begin{cor}
+The LTL and CTL model checking problems (Problem \ref{prob:ltl} and \ref{prob:ctl}) can be decided for timed automata, provided every proposition occurring in the temporal formulae is either an automaton location or a rectangular set.
+\end{cor}
+
+\begin{thm}[\cite{Alur1995a}]
+Let $\mathcal{A}$ be an initialized multirate automaton, and let $\Sigma$ be a finite set of rectangular sets. Then the transition system $\mathcal{T}_{\mathcal{A},\Sigma}$ has a finite bisimulation quotient, which can be constructed effectively.
+\end{thm}
+
+\begin{cor}
+The LTL and CLT problems (Problem \ref{prob:ltl} and \ref{prob:ctl}) can be decided for initialized multirate hybrid automata, provided every proposition occurring in temporal formulae is either an automaton location or a rectangular set.
+\end{cor}
+
+\begin{thm}[\cite{Henzinger1995}]
+Let $\mathcal{A}$ be an initialized rectangular automaton, and let $\Sigma$ be a finite set of rectangular sets. Then the transition system $\mathcal{T}_{\mathcal{A},\Sigma}$ has a finite language-equivalence quotient, which can be constructed effectively.
+\end{thm}
+
+\begin{cor}
+The LTL model checking problem (Problem~\ref{prob:ltl}) can be decided for initialized rectangular automata, provided every proposition occurring in temporal formulae is either an automaton location or a rectangular set.
+\end{cor}
+
+\begin{thm}[\cite{Vladimerou2009}]
+The transition system underlying a STORMED hybrid system has a finite bisimulation that respects any o-minimal structure partition. Moreover, if the o-minimal structure associated with the hybrid system is decidable, then there is an effective algorithm for constructing that bisimulation.
+\end{thm}

@@ -1,0 +1,320 @@
+The formal definitions of hybrid systems vary slightly, but they all agree on the following. A hybrid system consists of continuous and discrete variables. It is represented by finite state automata, where each mode (or location) of the automaton contains continuous actions, and the transitions between modes are discrete actions. The transitions are triggered through predicates defined on the continuous or discrete variables. This representation of a hybrid system is called a hybrid automaton.
+
+\begin{defi}[Hybrid Automaton]
+A \emph{hybrid automaton} $\mathcal{A}=(V,L,A,Init,Inv,E,f)$ consists of 7 components;
+\begin{description}
+    \item[$V$]{Finite set of \emph{continuous variables}, with valuation $\val(V)\subseteq\mathbb{R}^n$ where $n=|V|$,}
+    \item[$L$]{Finite set of \emph{locations/modes/discrete variables},}
+    \item[$A$]{Finite set of \emph{actions},}
+    \item[$Init$]{Set of \emph{initial states}, $Init\subseteq L \times \val(V)$,}
+    \item[$Inv$]{\emph{Invariant condition}, $Inv: L \rightarrow 2^{\val(V)}$,}
+    \item[$E$]{Finite set of \emph{edges}, $E\subseteq L\times A\times L$, where each edge represents a transition between two modes, and is labelled with an action and the following
+        \begin{itemize}
+            \item{$g : E \rightarrow 2^{\val(V)}$, a \emph{guard},}
+            \item{$r : E \rightarrow 2^{\val(V)}$, a \emph{reset map},}
+        \end{itemize}}
+    \item[$f$]{\emph{Flow condition}, $f: L\rightarrow (\val(V)\rightarrow\val(V))$.}
+\end{description}
+\end{defi}
+
+The set of states of the automaton is defined by $L\times\val(V)$. The invariant condition labels the modes with the domain of each continuous variable, while the flow function defines the behaviour of the continuous variables. For each mode $\ell\in L$ the flow of the continuous variable $x\in V$ is governed by the differential of $x$, $\dot{x}=f(\ell)(x)$.
+
+The execution of a hybrid system, follows the semantics of the hybrid automaton, by using the set of states $L\times\val(V)$, starting in the initial states $Init$ and following two types of transitions. Firstly, the discrete transitions, which correspond to the edges $e\in E$ in the hybrid automata definition and secondly, the continuous transitions which correspond to the flow condition.
+
+\begin{rem}[\cite{Halbwachs1994}]
+The edges of the underlying automaton can be seen as transition functions, and through their reset map can change the current valuation of a continuous variable.
+\end{rem}
+
+\begin{ex}[Thermostat \cite{Henzinger2000}]
+We take a simple example to illustrate a hybrid system and its corresponding automaton. Assume we have a thermostat controlling the temperature of a room. If the temperature falls beneath a certain limit, we turn the heating on, until it reaches a certain temperature. Once the upper temperature limit is reached, we turn the heating off, and so on. The automaton consists of the following $V=\{x\}$, $val(V)\subseteq\mathbb{R}$, $L=\{l_{0},l_{1}\}$, $A=\{ON,OFF\}$ and $Init=(l_{0},x\geq18)$. Each mode is labelled with the invariant condition
+\begin{align*}
+    Inv(l_{0}) & = \{x\geq18\} \\
+    Inv(l_{1}) & = \{x\leq22\}
+\end{align*}
+and the flow
+\begin{align*}
+    f(l_{0}) & = \{\dot{x} = -0.1x\} \\
+    f(l_{1}) & = \{\dot{x} = 5-0.1x\}.
+\end{align*}
+Finally, the edges between the modes have got guards
+\begin{align*}
+    g(l_{0},ON,l_{1}) & = \{x<19\}  \\
+    g(l_{1},OFF,l_{0}) & = \{x>21\}
+\end{align*}
+and the reset maps are empty.
+Figure~\ref{fig:exthermo} shows the hybrid automaton of this example, with the labelled modes and transitions.
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=4cm]
+            \node [state,initial] (s0) {$l_{0}$ \\ $\dot{x}=-0.1x$ \\ $x\geq18$};
+            \node [state] (s1) [right of = s0] {$l_{1}$\\ $\dot{x}=5-0.1x$ \\ $x\leq22$};
+            \path[->] (s0) edge [bend left=15] node [above] {ON, $x<19$} (s1)
+                (s1) edge [bend left=15] node [below] {OFF, $x>21$} (s0);
+        \end{tikzpicture}
+        \caption{Hybrid Automaton of a thermostat.}
+        \label{fig:exthermo}
+    \end{center}
+\end{figure}
+\end{ex}
+
+There are numerous types of hybrid systems which are defined by restrictions on their flow, guard and reset maps. In the next sections we are going to introduce the most common types.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% RECTANGULAR HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Rectangular Hybrid Automata}
+A rectangular hybrid automaton constricts the behaviour of the continuous variables within the modes. The slope of the continuous variables in each mode can vary within a bounded or unbounded rational interval.
+%\cite{Puri1994} \cite{Henzinger1995}
+
+\begin{defi}[Rectangular Set]
+For $\mathbb{R}^{n}$, with variables $x_{1},\ldots,x_{n}$, a \emph{rectangular set} is a conjuction of linear inequalities such as $x_{i}\sim c$, where $\sim\in\{<,\leq,=,\geq,>\}$, and $c\in\mathbb{Q}$. We say that for a rectangular set $R$, $R_{i}$ is the projection of $R$ onto $x_{i}$. So a rectangular set $R\subseteq\mathbb{R}^{n}$ is of the form $R=R_{1}\times\cdots\times R_{n}$.
+\end{defi}
+
+\begin{defi}[Rectangular Automaton]
+A hybrid automaton $\mathcal{A} = (V,L,A,Init,Inv,E,f)$ is \emph{rectangular} if
+\begin{itemize}
+    \item{for every $\ell\in L$ the sets $Init(\ell)$ and $Inv(\ell)$ are rectangular,}
+    \item{for every $\ell\in L$, there is a rectangular set $R^{\ell}$ such that $f(\ell)(x)=R^{\ell}$, $\forall x \in V$,}
+    \item{and on every edge $e\in E$ the guard set $g(e)$, and reset map $r(e)$ are rectangular.}
+\end{itemize}
+\end{defi}
+
+\begin{ex}[Rectangular Automaton Example \cite{Alur2000}]
+Figure~\ref{fig:exrect} shows a generic example of a rectangular hybrid automaton. The slopes of the differential equations are within a given bound and all sets in the modes and on the edges are rectangular.
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=5.5cm]
+            \node [state,initial] (s0) {$l_{0}$ \\ $1\leq\dot{x}\leq2,$\\$1\leq\dot{y}\leq2$ \\ $x<5$};
+            \node [state] (s1) [right of = s0] {$l_{1}$ \\ $0\leq\dot{x}\leq1,$\\$1\leq\dot{y}\leq2$ \\ $y<10$};
+            \path[->] (s0) edge [bend left=15] node [above] {$a_{1},\ x>4,\ x:=10,\ y:=4$} (s1)
+                (s1) edge [bend left=15] node [below] {$a_{2},\ y>4,\ y:=0$} (s0);
+        \end{tikzpicture}
+        \caption{Example of a rectangular automaton.}
+        \label{fig:exrect}
+    \end{center}
+\end{figure}
+\end{ex}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LINEAR HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Linear Hybrid Automata}
+The characteristics of a linear hybrid automaton are the linear expressions of the continuous variables. \cite{Alur1995a} Linear automata are also called \emph{multirate automata} \cite{Alur1995a,Alur2000}.
+
+\begin{defi}[Linear Term \cite{Henzinger2000}]
+Let $k_{0},\ldots,k_{n}\in \mathbb{Z}$, and $x_{0},\ldots,x_{n}\in V$ with $val(V)\subseteq \mathbb{R}^n$, be integer parameters and real valued variables, then the \emph{linear term} is
+\[
+k_{0}x_{0} + \cdots + k_{n}x_{n}.
+\]
+\end{defi}
+
+\begin{defi}[Linear Hybrid Automaton \cite{Henzinger2000}]
+A hybrid automaton $\mathcal{A}=(V,L,A,Init,Inv,E,f)$ is \emph{linear} if
+\begin{itemize}
+    \item{$Init, Inv, g, r$ are boolean combinations of the form $\tau_{1} \sim \tau_{2}$, where $\sim\in\{<,\leq,=,\geq,>\}$ and $\tau_{1},\tau_{2}$ are linear terms over $V$.}
+    \item{and if the flow condition is of the form $f(l)=\{\dot{x}=k : x\in V,\ k\in\mathbb{Z}\}$, for $l\in L$, $x\in V$.}
+\end{itemize}
+\end{defi}
+
+\begin{ex}[Water-level monitor \cite{Halbwachs1994}]
+The water level in a tank is observed by a monitor, which operates a pump. While the pump is off, the water level in the tank drops by a certain rate, should the level fall beneath a certain threshold the monitor signals the pump, which then turns on. While the pump is on, the water level in the tank increases up to a certain certain volume, when it is reached the monitor sends signal to the pump to turn it off.
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=5cm]
+            \node[state,initial] (s0) {$l_{0}$ \\ $\dot{x}=1,\ \dot{w}=1$ \\ $w<10$};
+            \node[state] (s1) [right of = s0] {$l_{1}$ \\ $\dot{x}=1,\ \dot{w}=1$ \\ $x<2$};
+            \node[state] (s2) [below of = s1,node distance=4cm] {$l_{2}$ \\ $\dot{x}=1,\ \dot{w}=-2$ \\ $w>5$};
+            \node[state] (s3) [below of = s0,node distance=4cm] {$l_{3}$ \\ $\dot{x}=1,\ \dot{w}=-2$ \\ $x<2$};
+            \path[->] (s0) edge node {signal on, \\ $w=10,x:=0$} (s1)
+                (s1) edge node [left] {ON, \\ $x=2$} (s2)
+                (s2) edge node {signal off, \\ $w=5,x:=0$} (s3)
+                (s3) edge node [left] {OFF, \\ $x=2$} (s0);
+        \end{tikzpicture}
+        \caption{Linear Hybrid Automaton of a water-level monitor.}
+        \label{fig:exwaterlevel}
+    \end{center}
+\end{figure}
+\end{ex}
+Another way of looking at linear hybrid automata is as this type being a special case of rectangular automata.
+
+\begin{defi}[Linear Hybrid Automaton \cite{Alur2000}]
+A \emph{linear hybrid automaton} is a rectangular automaton where
+\begin{itemize}
+    \item{for each $\ell\in L$, $Init(\ell)$ is a singleton or empty, $R^{\ell}=f(\ell)(x)$ is a singleton set, $\forall x\in V$,}
+    \item{for each edge $e\in E$ the guard set $g(e)$ and the reset map $r(e)$ are singleton sets.}
+\end{itemize}
+\end{defi}
+
+\subsection{Timed Automata}
+Timed automata were originally introduced as timed B\"{u}chi Automata \cite{Alur1990,Alur1994}, and can be seen as a special case of linear hybrid automata.
+
+\begin{defi}[Timed Automaton \cite{Lygeros2004}]
+A \emph{timed automaton} is a linear hybrid automaton where the flow condition in all modes is of the form $\dot{x}=1$, $\forall x\in V$.
+\end{defi}
+
+\begin{ex}[Timed Automaton Example \cite{Alur2000}]
+The automaton in Figure~\ref{fig:extime} is a generic example of a timed automaton. The automaton is similar to the example of a rectangular automaton in Figure~\ref{fig:exrect}. Noticeable are the differential equations which in the timed automaton ate all of the form $\dot{x}=1$.
+
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=5.5cm]
+            \node [state,initial] (s0) {$l_{0}$ \\ $\dot{x}=1,$\\$\dot{y}=1$ \\ $x<5$};
+            \node [state] (s1) [right of = s0] {$l_{1}$ \\ $\dot{x}=1,$\\$\dot{y}=1$ \\ $y<10$};
+            \path[->] (s0) edge [bend left=15] node [above] {$a_{1},\ x>4,\ x:=10,\ y:=4$} (s1)
+                (s1) edge [bend left=15] node [below] {$a_{2},\ y>4,\ y:=0$} (s0);
+        \end{tikzpicture}
+        \caption{Example of a timed automaton.}
+        \label{fig:extime}
+    \end{center}
+\end{figure}
+\end{ex}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% STOCHASTIC HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Stochastic Hybrid Automata}
+
+One type of stochastic hybrid automata is governed by stochastic behaviour of the continuous variables in each mode, rather than deterministic behaviour. So the flow of the continuous variables in the modes evolves through stochastic differential equations
+\[
+\dot{x} = f(\ell)(x) + dB_{t},
+\]
+where $B_{t}$ can be seen as the standard Brownian motion in $\mathbb{R}$ \cite{Hu2000}, or as a $\mathbb{R}^{n}$ valued Wiener process \cite{Koutsoukos2006}.
+
+Further, the transitions between the modes will be probabilistic.
+
+\begin{defi}[Stochastic Hybrid Automaton \cite{Hu2000}]
+A \emph{stochastic hybrid automaton} is a hybrid automaton $\mathcal{A}=(V,L,A,Init,Inv,E,f)$ where
+\begin{itemize}
+    \item{for each edge $e\in E$ the guard $g(e)$ is a measurable subset of $\delta Inv$, or empty,}
+    \item{the reset map $r$ is changed to be $r : E \rightarrow \mathcal{P}(val(V))$, such that is assigns each edge $(\ell,a,\ell')\in E$ a reset probability kernel on $val(V)$ concentrated on $Inv(\ell')$. Further, for any measurable set $M\subset Inv(\ell')$, $r(e)(M)$ is a measurable function.}
+\end{itemize}
+\end{defi}
+
+\begin{ex}[Car Chase \cite{Hu2000}]
+Imagine two cars $x_{1}$ and $x_{2}$ on a straight road. Both cars drive in the same direction, where the task for $x_{1}$ is to catch up with $x_{2}$ (which is driving at a constant speed) up to given distance, keep following, if $x_{1}$ gets too close, $x_{1}$ breaks and falls back. The motion of both cars is stochastic, due to many unknown factors such as the road condition or the environment. We can abstract the stochastic behaviour away from the motion of $x_{2}$ as we are modeling the behaviour of $x_{1}$. The distance between the two cars is $\Delta x$. There are multiple distance thresholds we consider $d_{0}>d_{1}>d_{2}>d_{3}>0$ which are in order, post breaking distance, chasing distance, keeping distance and being too close. Figure~\ref{fig:excar} shows the three modes of the scenario, chasing, keeping up and breaking. We denote the probability of $x_{1}$ falling behind $x_{2}$ further than the the keeping up distance by $p$, so the probability of being too close to $x_{2}$ is $1-p$.
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=5.5cm]
+            \node [state] (s0) {$l_{0}$\\ $\dot{x}_{1}=v_{1}+dB_{t},$\\$\dot{x}_{2}=v_{2}$\\ $\Delta x>d_{2}$};
+            \node [state] (s1) [right of = s0] {$l_{1}$\\ $\dot{x}_{1}=v_{2}+dB_{t},$\\$\dot{x}_{2}=v_{2}$\\ $d_{3}<\Delta x<d_{1}$};
+            \node [state] (s2) [below right of = s0,xshift=-1cm] {$l_{2}$\\ $\ddot{x}_{1}=-a_{1}(t),$\\$\dot{x}_{2}=v_{2}$\\ $\Delta x<d_{0}$};
+            \path[->] (s0) edge [bend left=15] node [above] {$1:($Keep up, $\Delta x=d_{2})$} (s1)
+                (s1) edge [bend left=15] node [below] {$p:($Chase, $\Delta x=d_{1})$} (s0)
+                    edge node [right] {$1-p:($Break, $\Delta x=d_{3})$} (s2)
+                (s2) edge node [left] {$1:($Chase, $\Delta x=d_{0})$} (s0);
+        \end{tikzpicture}
+        \caption{Example of a simplistic car chase as a stochastic hybrid automaton.}
+        \label{fig:excar}
+    \end{center}
+\end{figure}
+\end{ex}
+
+Another type of stochastic hybrid systems have just probabilistic discrete transitions between the modes, while the behaviour of the continuous variables inside the modes can be deterministic. This type of hybrid automaton is called probabilistic.
+
+\begin{defi}[Probabilistic Hybrid Automaton \cite{Hahn2011}]
+A hybrid automaton $\mathcal{A}=(V,L,A,Init,Inv,E,f)$ is \emph{probabilistic} if we define a \emph{transition function} on the edges between the modes $t : L\times A \rightarrow \mathcal{P}(L)$, where $\mathcal{P}(L)$ is a distribution over $L$, and the guard and reset maps, $g(\ell,a,\ell'),\ r(\ell,a,\ell')$  are defined over the set of edges $E \subseteq L \times A \times L$ if $t(\ell,a)=\mathcal{P}(\ell')\neq 0$.
+\end{defi}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% O MIN HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Order-Minimal Hybrid Automata}
+The idea behind order-minimal hybrid automata is to limit the discrete transitions, rather than the continuous flow. With this restriction it can be easier to abstract the hybrid system.
+
+%To introduce the notion of order-minimality, first we need to consider a few definitions from formal language theory.
+
+%\begin{defi}[Theory]
+
+%\end{defi}
+
+\begin{defi}[Order-Minimal Theory \cite{Lafferriere1999}]
+The theory over the reals $Th(\mathbb{R})$ is \emph{o-minimal} (order-minimal) if every definable subset of $\mathbb{R}$ is a finite union of points and intervals (possibly unbounded).
+\end{defi}
+
+\begin{defi}[Order-Minimal Hybrid Automaton \cite{G.Lafferiere2000}]
+A hybrid system $\mathcal{A}=(V,L,A,Init,Inv,E,f)$ is called \emph{o-minimal} if
+\begin{itemize}
+    \item{for each $\ell\in L$, the flow $f(\ell)$ is a complete differential function (defined for all time);}
+    \item{for each $e\in E$, the reset map $r(e)$ is a piecewise constant but set valued map, with a finite number of pieces;}
+    \item{for each $\ell\in L$ and all $e\in E$, $Inv(\ell),\ Init(\ell),\ , g(e),\ f(\ell)$ are definable over the same o-minimal theory over $\mathbb{R}$.}
+\end{itemize}
+\end{defi}
+
+\begin{ex}[Timed Digital Code \cite{Brihaye2005}]
+In this example we model a door which is locked and alarmed. To unlock it safely the user has to swipe a card $c$ and then enter the correct passcode $w$. The passcode is $ABC$ and the user has one time unit $t$ for each letter. Should they enter a wrong letter or not within the given time, the alarm will go off. This example can be modelled as a o-minimal hybrid automaton as in Figure~\ref{fig:expass}.
+
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=3.7cm]
+            \node [state,initial] (s0) {$l_{0}$\\$\dot{t}=1$\\$w=\epsilon,$\\$c=0$};
+            \node [state] (s1) [right of = s0] {$l_{1}$\\$\dot{t}=1$\\$w=\epsilon$\\$c=1$};
+            \node [state] (s2) [right of = s1] {$l_{2}$\\$\dot{t}=1$\\$w=A$\\$c=1$};
+            \node [state] (s3) [right of = s2] {$l_{3}$\\$\dot{t}=1$\\$w=AB$\\$c=1$};
+            \node [state] (s4) [below right of = s1,xshift=-1cm] {$l_{4}$};
+
+            \path[->] (s0) edge node [above] {Swipe\\$c:=1$} node [below] {$t:=0$} (s1)
+                (s1) edge node [above] {Input\\$t\leq1$\\$w=A$} node [below] {$t:=0$} (s2)
+                    edge node [left] {Alarm\\$t>1$\\$w\neq A$} (s4)
+                (s2) edge node [above] {Input\\$t\leq1$\\$w=AB$} node [below] {$t:=0$} (s3)
+                    edge node [left,yshift=2mm] {Alarm\\$t>1$\\$w\neq AB$} (s4)
+                (s3) edge [bend right] node [above] {Open $t\leq1,\ w=ABC,\ t:=0,\ c:=0,\ w:=\epsilon$} (s0)
+                    edge node [right,xshift=5mm] {Alarm\\$t>1$\\$w\neq ABC$} (s4);
+
+        \end{tikzpicture}
+        \caption{Example of a secured door, with timed passcode entry.}
+        \label{fig:expass}
+    \end{center}
+\end{figure}
+\end{ex}
+
+Rectangular Set: conjunction of $x\sim c$, where $x\in \val(C)$, $c\in\mathbb{Q}$, and $\sim\in\{<,\leq,=,\geq,>\}$; $B=B_{1}\times\cdots\times B_{n}\subseteq \mathbb{R}^{n}$.
+
+Linear Term: $k_{0}x_{0}+\cdots+k_{n}x_{n}$, where $k_{0},\ldots,k_{n}\in \mathbb{Z}$, $x_{0},\ldots,x_{n}\in V$, $\val(V)\in\mathbb{R}^{n}$.
+Linear Expression: $\tau_{1}\sim\tau_{2}$, where $\sim\in\{<,\leq,=,\geq,>\}$ and $\tau_{1},\tau_{2}$ are linear terms.
+
+
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|l|l|l|l|}\hline
+Type & $Init$, $Inv$ & $g$ & $r$ & $f$ \\ \hline
+Rectangular & Rectangular & Rectangular & Rectangular & $f(\ell)(x) = B^{\ell}$ \\ \hline
+Linear & Linear & Linear  & Linear  & $f(\ell)(x)=k$ \\ \hline
+Timed & Linear & Linear & Linear & $f(\ell)(x)=1, \forall x$ \\ \hline
+Stochastic &  &  &  & \\ \hline
+O-Minimal &  &  &  & \\ \hline
+\end{tabular}
+\label{tab:hasummary}
+\caption{Summary of the presented types of hybrid systems.}
+\end{center}
+\end{table}
+%\cite{Alur1995a,Amin2006,Alur1993,Alur2011a,Henzinger2000,Maler2014a,Nicollin1993,Platzer2011a,Raskin2005,Tabuada,Fehnker2004,Tomlin2003,Alur1997,Asarin1997}
+
+%\cite{Alur2011a} mentions some abstractions  (flowpipe, simulation, phase portrait)
+
+%\cite{Henzinger2000} covers some abstraction techniques with refs (discrete, bisimulation, $\mu$)
+
+%\cite{Maler2014a} contains some refs to different types of abstr.
+
+%\cite{Asarin1997} timed aut abstraction using numberical decision diagram
+
+%\subsection{Applications}
+%\cite{Chaimowicz2003} in robotic cooperation
+
+%\cite{Dennis2013a} more robotic applications and some refs to abstractions.
+
+%\cite{Fehnker2004} contains benchmarks and uses both d/dt anf charon.
+
+%\cite{Tomlin2003} with tools

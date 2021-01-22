@@ -1,0 +1,17 @@
+\begin{thm}[\cite{Henzinger1995}]
+Consider the class of linear hybrid automata with $n-1$ continuous variables, where all $x$ have derivative $f(\ell)=\dot{x}=1$, $\forall\ell\in L$, and one two slope variable with slopes $k_{1}\neq k_{2}$, which means that $f(\ell,x)=k_{1}$ or $f(\ell,x)=k_{2}$ $\forall\ell\in L$. Then the reachability problem \ref{prob:reach} is undecidable.
+\end{thm}
+
+\begin{thm}[\cite{Henzinger1995}]
+Suppose we generalize the definition of linear hybrid automata so to permit
+\begin{enumerate}
+    \item{the intersection of rectangular guard sets $g(e)$ with inequalities of the form $x_{i}\leq x_{j}$,}
+    \item{the intersection of rectangular invariant sets $Inv(\ell)$ with inequalities of the form $x_{i}\leq x_{j}$,}
+    \item{reset maps $r(e)$ of the form $x_{i}=x_{j}$, for $j\neq i$.}
+\end{enumerate}
+Consider a class of linear hybrid automata that are generalized in one of these three ways and that have $n-1$ continuous variables of the form $\dot{x}=1$ and a one-slope variable with slope $k\neq1$. The reachability problem \ref{prob:reach} is undecidable for this class of hybrid automata.
+\end{thm}
+
+\begin{thm}[\cite{Henzinger2000}]
+The reachability problem (Problem~\ref{prop:reach}) for multi-singular automata and for triangular automata are undecidable.
+\end{thm}

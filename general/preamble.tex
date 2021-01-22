@@ -1,0 +1,37 @@
+\usepackage[a4paper]{geometry}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+%llbracket and rrbracket
+\usepackage{stmaryrd}
+
+\usepackage[boxed,noline]{algorithm2e}
+
+\usepackage{float}
+\usepackage{tikz}
+
+\usetikzlibrary{automata}
+
+%Defs and thms
+\theoremstyle{definition}
+\newtheorem{defi}{Definition}
+\newtheorem{ex}[defi]{Example}
+
+\theoremstyle{remark}
+\newtheorem{rem}[defi]{Remark}
+
+\theoremstyle{plain}
+\newtheorem{thm}[defi]{Theorem}
+\newtheorem{prob}[defi]{Problem}
+\newtheorem{cor}[defi]{Corollary}
+\newtheorem{lem}[defi]{Lemma}
+
+%operators
+\newcommand{\val}{\operatorname{val}}
+\newcommand{\until}{\ \mathcal{U}}
+
+\tikzset{every node/.style={align=center}, >= latex, font=\scriptsize}
+
+\newcommand{\comm}[1]{{\color{red} \marginpar{? [?]} \textsf{[#1]}}}

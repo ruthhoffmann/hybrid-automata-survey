@@ -1,0 +1,405 @@
+Formal definitions of hybrid systems vary slightly, but they all agree on the following. A hybrid system consists of continuous behaviour and discrete jumps. A hybrid system can be represented by a Hybrid Automaton (HA) which consists of a a finite set of locations (or modes) with continuous behaviour within the locations, and discrete transitions between locations, with associated actions. The transitions are triggered through predicates defined on the continuous or discrete variables. The variables can also be reset on the transitions.
+\begin{defi}[HA]
+A \emph{hybrid automaton} $\mathcal{A}=(V,L,A,\Init,\Inv,E,f)$ consists of 7 components:
+\begin{description}
+    \item[$V$]{a finite set of \emph{continuous variables}, with valuation $\val(V)\subseteq\mathbb{R}^n$ where $n=|V|$,}
+    \item[$L$]{a finite set of \emph{locations/modes/discrete variables},}
+    \item[$A$]{a finite set of \emph{actions},}
+    \item[$\Init$]{set of \emph{initial states}, $\Init\subseteq L \times \val(V)$,}
+    \item[$\Inv$]{\emph{invariant condition}, $\Inv: L \rightarrow 2^{\val(V)}$,}
+    \item[$E$]{finite set of \emph{edges}, $E\subseteq L\times A\times L$, where each edge represents a transition between two locations. Each edge has the following associated,
+        \begin{itemize}
+            \item{$g : E \rightarrow 2^{\val(V)}$, a \emph{guard},}
+            \item{$r : E \rightarrow 2^{\val(V)}$, a \emph{reset map},}
+        \end{itemize}}
+    \item[$f$]{\emph{flow condition}, $f: L\rightarrow (\val(V)\rightarrow\val(V))$.}
+\end{description}
+\end{defi}
+
+The set of states of the automaton is $L\times\val(V)$. The invariant condition labels the locations with the domain of each continuous variable, while the flow function defines the behaviour of the continuous variables within the locations. For each location $\ell\in L$ the flow of the continuous variable $x\in V$ is governed by the derivative of $x$ with respect to time, so $f(\ell)(x)\equiv\dot{x}$.
+
+The execution of a hybrid system follows the semantics of the hybrid automaton by using the set of states $L\times\val(V)$, starting in the initial states $\Init$ and following two types of transitions: firstly, the discrete transitions, which correspond to the edges $e\in E$ in the hybrid automaton definition; and secondly, the continuous transitions which correspond to the flow condition.
+
+The edges of the underlying automaton can be seen as transition functions enabled by the guard condition, and through their reset map can change the current valuation of a continuous variable.\cite{Halbwachs1994}
+
+\begin{ex}[Water Tank \cite{Raskin2005}]
+We take a simple example to illustrate a hybrid system and its corresponding automaton. Assume we have a water tank in which we want to control the temperature. If the temperature $x$ of the water falls to a lower limit, the heating will turn on, until it reaches a certain temperature. Once the upper temperature limit is reached, the heating turns off, and so on. Additionally, while the heater is on, or off, we can turn the heater on/off as we like. The automaton consists of the following $V=\{x\}$, $\val(V)\subseteq\mathbb{R}$, $L=\{l_{0},l_{1},l_{2},l_{3}\}$, $A=\{\text{ON, OFF, Max, Min}\}$ and $\Init=(l_{0},x=20)$. Each location is labelled with the invariant conditions
+\begin{align*}
+    \Inv(l_{0}) & = \{x=20\} \\
+    \Inv(l_{1}) & = \{20\leq x\leq100\} \\
+    \Inv(l_{2}) & = \{x=100\} \\
+    \Inv(l_{3}) & = \{20\leq x\leq100\}
+\end{align*}
+and the flows
+\begin{align*}
+    f(l_{0}) & = \{\dot{x} = 0\} \\
+    f(l_{1}) & = \{\dot{x} = K(h-x)\} \\
+    f(l_{2}) & = \{\dot{x} = 0\} \\
+    f(l_{3}) & = \{\dot{x} = -Kx\}.
+\end{align*}
+The set of edges is $E=\{(l_{0},\text{ ON},l_{1}), (l_{1},\text{ Max},l_{2}), (l_{1},\text{ OFF},l_{3}), (l_{2},\text{ OFF},l_{3}), (l_{3},\text{ Min},l_{0}), (l_{3},\text{ ON},l_{1})\}$.
+Finally, the edges between the locations have guards
+\begin{align*}
+    g(l_{0},\text{ ON},l_{1}) &= \mathbb{R}\\
+    g(l_{1},\text{ Max},l_{2}) &= 100\\
+    g(l_{1},\text{ OFF},l_{3}) &= \mathbb{R}\\
+    g(l_{2},\text{ OFF},l_{3}) &= \mathbb{R}\\
+    g(l_{3},\text{ Min},l_{0}) &= 20 \\
+    g(l_{3},\text{ ON},l_{1}) &= \mathbb{R}
+\end{align*}
+and the reset maps are empty, so the variables do not get reset on any transition.
+Figure~\ref{fig:exthermo} shows the hybrid automaton of this example, with the labelled locations and transitions.
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=4cm]
+            \node [state,initial] (s0) {$l_{0}$ \\ $\dot{x}=0$ \\ $x=20$};
+            \node [state] (s1) [right of = s0] {$l_{1}$\\ $\dot{x}=K(h-x)$ \\ $20\leq x\leq100$};
+            \node [state] (s2) [below of = s1] {$l_{2}$\\ $\dot{x}=0$ \\ $x=100$};
+            \node [state] (s3) [below of = s0] {$l_{3}$\\ $\dot{x}=-Kx$ \\ $20\leq x\leq100$};
+            \path[->] (s0) edge node [above] {ON} (s1)
+                (s1) edge node [right] {Max, \\$x=100$} (s2)
+                    edge [bend left=15] node [below,xshift=2mm] {OFF} (s3)
+                (s2) edge node [below] {OFF} (s3)
+                (s3) edge node [left] {Min, \\ $x=20$} (s0)
+                    edge [bend left=15] node [above,xshift=-2mm] {ON} (s1);
+        \end{tikzpicture}
+        \caption{Hybrid Automaton of a temperature controlled water tank.}
+        \label{fig:exthermo}
+    \end{center}
+\end{figure}
+\end{ex}
+
+There are numerous types of hybrid systems which are defined by restrictions on their flow, guard and reset maps. In the next sections we introduce the most common ones.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LINEAR HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Linear Hybrid Automata}
+Linear hybrid automata restrict their flow functions to be constant and the guard, reset, initial and invariant conditions are restricted to be linear expressions \cite{Alur1995a}.
+
+\begin{defi}[Linear Term \cite{Henzinger2000}]
+Let $k_{0},\ldots,k_{n}\in \mathbb{Z}$ be integer parameters, and $x_{0},\ldots,x_{n}\in V$ with $\val(V)\subseteq \mathbb{R}^n$, real valued variables, then a \emph{linear term} is
+\[
+k_{0}x_{0} + \cdots + k_{n}x_{n}.
+\]
+\end{defi}
+
+\begin{defi}[Linear Hybrid Automaton \cite{Henzinger2000}]
+A hybrid automaton $\mathcal{A}=(V,L,A,\Init,\Inv,E,f)$ is \emph{linear} if
+\begin{itemize}
+    \item{$\Init, \Inv, g, r$ are boolean combinations of the form $\tau_{1} \sim \tau_{2}$, where $\sim\in\{<,\leq,=,\geq,>\}$ and $\tau_{1},\tau_{2}$ are linear terms over $V$;}
+    \item{and if the flow condition is of the form $f(l)=\{\dot{x}=k : x\in V,\ k\in\mathbb{Z}\}$, where $l\in L$, $x\in V$.}
+\end{itemize}
+\end{defi}
+
+\begin{ex}[Linear Hybrid Automaton Example]
+Figure~\ref{fig:linHAex} shows an example of a linear hybrid automaton, which has constant flow and linear terms as guards on the edges.
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=5cm]
+            \node[state,initial] (s0) {$l_{0}$ \\ $\dot{x}=1,\ \dot{w}=2$ \\ $w<10$};
+            \node[state] (s1) [right of = s0] {$l_{1}$ \\ $\dot{x}=-1,\ \dot{w}=0$ \\ $x>0$};
+            \path[->] (s0) edge [bend left] node [above] {OFF, \\ $x+3w<20x-w,w:=0$} (s1)
+                (s1) edge [bend left] node [below] {ON, \\ $x=w,x:=0$} (s0);
+        \end{tikzpicture}
+        \caption{Linear Hybrid Automaton of a water-level monitor.}
+        \label{fig:linHAex}
+    \end{center}
+\end{figure}
+The flow conditions are all constant in all locations
+\begin{align*}
+f(l_{0}) & =\{\dot{x}=1,\dot{w}=2\} \\
+f(l_{1}) & =\{\dot{x}=-1,\dot{w}=0\},
+\end{align*}
+and all conditions are linear terms, as seen in for example the guards
+\begin{align*}
+g(l_{0},OFF,l_{1}) & = x+3w<20x-w \\
+g(l_{1},ON,l_{0}) & = x=w .
+\end{align*}
+\end{ex}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% RECTANGULAR HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Rectangular Hybrid Automata}
+Compared to linear HAs, a rectangular HA allows the flow behaviour of the continuous variables to lie within a bounded interval.  \cite{Henzinger1995, Puri1994} Further, all conditions (invariant, initial, guard and reset) are defined in terms of linear inequalities.
+
+\begin{defi}[Rectangular Set \cite{Alur2000}]
+For $\mathbb{R}^{n}$, with variables $x_{1},\ldots,x_{n}$, a \emph{rectangular set} is a conjuction of linear inequalities such as $x_{i}\sim c$, where $\sim\in\{<,\leq,=,\geq,>\}$, and $c\in\mathbb{Q}$. We say that for a rectangular set $R$, $R_{i}$ is the projection of $R$ onto $x_{i}$. So a rectangular set $R\subseteq\mathbb{R}^{n}$ is of the form $R=R_{1}\times\cdots\times R_{n}$.
+\end{defi}
+
+\begin{defi}[Rectangular HA]
+A hybrid automaton $\mathcal{A} = (V,L,A,\Init,\Inv,E,f)$ is \emph{rectangular} if
+\begin{itemize}
+    \item{for every $\ell\in L$ the sets $\Init(\ell)$ and $\Inv(\ell)$ are rectangular,}
+    \item{for every $\ell\in L$, there is a rectangular set $R^{\ell}$ such that $f(\ell)=R^{\ell}$,}
+    \item{and on every edge $e\in E$ the guard set $g(e)$, and reset map $r(e)$ are rectangular.}
+\end{itemize}
+\end{defi}
+
+\begin{ex}[Rectangular Automaton Example \cite{Henzinger1997}]
+Figure~\ref{fig:exrect} shows an example of a rectangular hybrid automaton representing a thermostat. In location $\ell_{0}$ the heater is on; if the temperature $x$ reaches 3 units, the heater is turned off; once the temperature reaches 1 unit, the heater is turned back on. The rate of change in temperature is variable due to possible interference by other warm sources in the room.
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=5.5cm]
+            \node [state,initial] (s0) {$l_{0}$ \\ $2\leq\dot{x}\leq4,$\\$1\leq x\leq2$};
+            \node [state] (s1) [right of = s0] {$l_{1}$ \\ $-3\leq\dot{x}\leq-1,$\\$1\leq x\leq3$};
+            \path[->] (s0) edge [bend left=15] node [above] {off, $x=3$} (s1)
+                (s1) edge [bend left=15] node [below] {on, $x=1$} (s0);
+        \end{tikzpicture}
+        \caption{Example of a rectangular automaton representing a thermostat.}
+        \label{fig:exrect}
+    \end{center}
+\end{figure}
+\end{ex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MULTIRATE HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Multirate Automata}
+A special case of rectangular automata are \emph{multirate automata} \cite{Alur1995a,Alur2000,Henzinger1995} or \emph{multisingular automata} \cite{Sproston2000}. The flow functions in these automata are constricted to be a skewed clock, in other words  $f(\ell)(x)=c$ where $c\in \mathbb{R}$ where $c$ can vary based on the location and the variable..
+
+\begin{defi}[Multirate HA \cite{Alur1995a}]
+A \emph{multirate automaton} is a rectangular automaton where for each $\ell\in L$, $\Init(\ell)$ is a singleton or empty, $R^{\ell}=f(\ell)$ is a singleton set.
+
+%    \item{for each edge $e\in E$ the guard set $g(e)$ and the reset map $r(e)$ are singleton sets.}
+\end{defi}
+
+\begin{ex}[Mutual Exclusion Protocol \cite{Alur1995a}]
+The mutual exclusion protocol for two processes can be modelled with a multirate automaton.
+We are looking at the behaviour of two processes which both read and write to a shared variable $k$. Each process has its own internal clock, and takes at most $a$ time units to write to $k$. After writing, we delay the next write action by $b$ time units. Figure~\ref{fig:exmr} contains the hybrid automaton representing the actions of the processes.
+
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=3.5cm]
+            \node [state,initial] (p1) {$P_{11}$\\$\dot{x}=1$};
+            \node [state] (p2) [right of =p1] {$P_{12}$\\$\dot{x}=1$\\$x<a$};
+            \node [state] (p3) [right of =p2] {$P_{13}$\\$\dot{x}=1$};
+            \node [state] (p4) [right of =p3] {$P_{14}$\\$\dot{x}=1$};
+
+            \node [state,initial] (q1) [below of =p1,node distance=4cm] {$P_{21}$\\$\dot{y}=1.1$};
+            \node [state] (q2) [right of =q1] {$P_{22}$\\$\dot{y}=1.1$\\$y<a$};
+            \node [state] (q3) [right of =q2] {$P_{23}$\\$\dot{y}=1.1$};
+            \node [state] (q4) [right of =q3] {$P_{24}$\\$\dot{y}=1.1$};
+
+            \path [->] (p1) edge node [above] {write} node [below] {$k=0$, $x:=0$} (p2)
+                (p2) edge node [above] {release} node [below] {$k:=1$, $x:=0$} (p3)
+                (p3) edge node [above] {delay} node [below] {$x>b$, $k=1$}(p4)
+                    edge [bend right] node [above] {restart, $x>b$, $k\neq1$} (p1)
+                (p4) edge [bend left] node [above] {restart, $k:=0$} (p1)
+                (q1) edge node [above] {write} node [below] {$k=0$, $y:=0$} (q2)
+                (q2) edge node [above] {release} node [below] {$k:=1$, $y:=0$} (q3)
+                (q3) edge node [above] {delay} node [below] {$y>b$, $k=1$} (q4)
+                    edge [bend right] node [above] {restart, $y>b$, $k\neq1$} (q1)
+                (q4) edge [bend left] node [above] {restart, $y:=0$} (q1);
+
+        \end{tikzpicture}
+        \caption{Multirate automaton of a mutual exclusion protocol.}
+        \label{fig:exmr}
+    \end{center}
+\end{figure}
+\end{ex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% STOPWATCH Aut
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Stopwatch Automata}
+A \emph{stopwatch automaton} is a multirate automaton where we allow for the progression in the continuous variables to resemble clocks, with the additional possibility of not having some of the clocks `running' in some locations.
+
+\begin{defi}[Stopwatch Automaton \cite{Sproston1999}]
+A \emph{stopwatch automaton} is a multirate automaton where for each $\ell\in L$ and for each $x\in V$ we have that $f(\ell)$ is $\dot{x}=1$ or $\dot{x}=0$.
+\end{defi}
+
+\begin{ex}
+Figure~\ref{fig:exsw} is an example of a stopwatch automaton which has two variables $x$ and $y$. Every 10 time units it switches which variable is counting and resets the other.
+
+    \begin{figure}[H]
+        \begin{center}
+            \begin{tikzpicture}[node distance=5.5cm]
+                \node [state,initial] (s0) {$l_{0}$ \\ $\dot{x}=1,$\\$\dot{y}=0$ \\ $x\leq10$};
+                \node [state] (s1) [right of = s0] {$l_{1}$ \\ $\dot{x}=0,$\\$\dot{y}=1$ \\ $y\leq10$};
+                \path[->] (s0) edge [bend left=15] node [above] {$a_{1},\ x=10,\ y:=0$} (s1)
+                    (s1) edge [bend left=15] node [below] {$a_{2},\ y=10,\ x:=0$} (s0);
+            \end{tikzpicture}
+            \caption{Example of a stopwatch automaton.}
+            \label{fig:exsw}
+        \end{center}
+    \end{figure}
+    \end{ex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% TIMED Aut
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Timed Automata}
+Timed automata were originally introduced as timed B\"{u}chi Automata \cite{Alur1990,Alur1994}, and can be seen as another special case of rectangular HAs. Specifically, we restrict the flow in the all locations, to be exactly $\dot{x}=1$, for all continuous variables $x$.
+
+\begin{defi}[Timed Automaton \cite{Lygeros2004}]
+A \emph{timed automaton} is a rectangular hybrid automaton where the flow condition in all locations is of the form $\dot{x}=1$, $\forall x\in V$.
+\end{defi}
+
+It is easy to see that timed automata are a special case multirate automata, where for all $\ell\in L$ we have that $f(\ell)=\{\dot{x}=1 : \forall x\in V\}$. In fact this restriction is also a special case of stopwatch automata.
+
+\begin{ex}[Timed Automaton Example \cite{Alur2000}]
+The automaton in Figure~\ref{fig:extime} is a generic example of a timed automaton. Noticeable are the differential equations which in the timed automaton are all of the form $\dot{x}=1$.
+
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=5.5cm]
+            \node [state,initial] (s0) {$l_{0}$ \\ $\dot{x}=1,$\\$\dot{y}=1$ \\ $x<5$};
+            \node [state] (s1) [right of = s0] {$l_{1}$ \\ $\dot{x}=1,$\\$\dot{y}=1$ \\ $y<10$};
+            \path[->] (s0) edge [bend left=15] node [above] {$a_{1},\ x>4,\ x:=10,\ y:=4$} (s1)
+                (s1) edge [bend left=15] node [below] {$a_{2},\ y>4,\ y:=0$} (s0);
+        \end{tikzpicture}
+        \caption{Example of a timed automaton.}
+        \label{fig:extime}
+    \end{center}
+\end{figure}
+\end{ex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% O MIN HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Order-Minimal Hybrid Automata}
+Another way to restrict the various components of a hybrid automata, to ease the abstraction of the system, is to limit the behaviour on the discrete transitions, rather than the continuous flow.
+These restricted hybrid automata have a decidable reachability problem.
+
+Before defining an order-minimal or o-minimal HA, we need to introduce the notion of order-minimality.
+A \emph{language} is a set of symbols which is separated into relations $R$, functions $F$ and constants $C$. Let $V=\{x_{1},x_{2},\ldots\}$ be a countable set of variables.
+A \emph{term} $\theta$ of a language is a variable, a constant, or $F(\theta_{1},\ldots,\theta_{m})$ where $F$ is an $m$-ary function and $\theta_{i}$, $i\in\{1,\ldots,m\}$ are terms.
+An \emph{atomic formula} of a language is of the form
+\begin{itemize}
+    \item $\theta_{1}=\theta_{2}$ or
+    \item $R(\theta_{1},\ldots,\theta_{n})$,
+\end{itemize}
+where $\theta_{i}$ are terms and $R$ is an $n$-ary relation.
+An \emph{first-order formula} is defined as
+\begin{itemize}
+    \item every atomic formula is a formula
+    \item if $\phi_{1}$ and $\phi_{2}$ are formulae then so are $\phi_{1}\land\phi_{2}$, $\lnot\phi_{1}$, $\forall x : \phi_{1}$ or $\exists x : \phi_{1}$,
+\end{itemize}
+where $x$ is a variable $\land$ and $\lnot$ are boolean connectives and $\forall$ and $\exists$ are quantifiers.
+The occurrence of a variable in a formula is \emph{free} if it is not inside the scope of a quantifier, otherwise it is said to be \emph{bound}. The free variables $x_{1},\ldots,x_{n}$ of a formula $\phi$ are denoted by $\phi(x_{1},\ldots,x_{n})$.
+A \emph{sentence} of a language is a formula with no free variables.
+A \emph{structure} (or model) $\mathcal{S}=(S,I)$ of a language is a tuple consisting of a non-empty set $S$ called the \emph{domain} $S$ and an \emph{interpretation} $I$ of the relations, functions and constants.
+A $k$-ary relation $R\subset S^{k}$, where $S$ the domain of a structure $\mathcal{S}$, is \emph{definable} in the structure $\mathcal{S}$ if there is a formula $\phi(x_{1},\ldots,x_{k})$
+with free variables $x_{1},\ldots,x_{k}$ such that
+$S=\{(a_{1},\ldots,a_{k} : \mathcal{S} \models \phi[x_{i}\mapsto a_{i}]_{i=1}^{k}\}$.
+A $k$-ary function $f$ is said to be \emph{definable} if its graph, the set of all $(x_{1},\ldots,x_{k},f(x_{1},\ldots,x_{k}))$, is definable.
+A \emph{theory} $T(\mathcal{S})$ of a structure $\mathcal{S}$ is the set of all sentences that hold in $\mathcal{S}$.
+A binary relation $\leq$ on a set $S$ is a \emph{total ordering} if it is
+reflexive ($a\leq a$), transitive ($a\leq b$ and $b\leq c$ then $a\leq c$), anti-symmetric ($a\leq b$ and $b\leq a$ then $a=b$), and total ($a\leq b$ or $b\leq a$) for $a,b\in S$.
+A set is said to be \emph{totally ordered} if there is a total order on it.
+An \emph{interval} is a subset of a totally ordered set defined as $\{x : a\leq x\leq b\}$, $\{x : x\leq a\}$ or $\{x : a\leq x\}$.
+A \emph{point} is an interval of the form $\{x : a\leq x\leq b\}$ where $a=b$.
+A totally ordered structure $\mathcal{S}$ is \emph{o-minimal} (order-minimal) if every definable set is a finite union of intervals and points.
+
+%\begin{defi}[Order-Minimal Theory \cite{Lafferriere1999}]
+%The theory over the reals $Th(\mathbb{R})$ is \emph{o-minimal} (order-minimal) if every definable subset of $\mathbb{R}$ is a finite union of points and intervals (possibly unbounded).
+%end{defi}
+
+\begin{defi}[O-Minimal HA \cite{Lafferriere1999,G.Lafferiere2000}]
+A hybrid system $\mathcal{A}=(V,L,A,\Init,\Inv,E,f)$ is called \emph{order-minimal} (or o-minimal) if
+\begin{itemize}
+    \item{for each $\ell\in L$, the flow $f(\ell)$ is a complete differential function (defined for all time);}
+    \item{for each $e\in E$, the reset map $r(e)$ is a piecewise constant but set valued map, with a finite number of pieces;}
+    \item{for each $\ell\in L$ and all $e\in E$, $\Inv(\ell),\ \Init(\ell),\ , g(e),\ f(\ell)$ are definable over the same o-minimal theory over $\mathbb{R}$.}
+\end{itemize}
+\end{defi}
+
+\begin{ex}[Timed Digital Code \cite{Brihaye2005}]
+In this example we model a door which is locked and alarmed. To unlock it safely the user has to swipe a card $c$ and then enter the correct passcode $w$. The passcode is $ABC$ and the user has one time unit $t$ for each letter. Should they enter a wrong letter or not within the given time, the alarm will go off. This example can be modelled as a o-minimal hybrid automaton as in Figure~\ref{fig:expass}.
+
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=3.7cm]
+            \node [state,initial] (s0) {$l_{0}$\\$\dot{t}=1$\\$w=\epsilon,$\\$c=0$};
+            \node [state] (s1) [right of = s0] {$l_{1}$\\$\dot{t}=1$\\$w=\epsilon$\\$c=1$};
+            \node [state] (s2) [right of = s1] {$l_{2}$\\$\dot{t}=1$\\$w=A$\\$c=1$};
+            \node [state] (s3) [right of = s2] {$l_{3}$\\$\dot{t}=1$\\$w=AB$\\$c=1$};
+            \node [state] (s4) [below right of = s1,xshift=-1cm] {$l_{4}$};
+
+            \path[->] (s0) edge node [above] {Swipe\\$c:=1$} node [below] {$t:=0$} (s1)
+                (s1) edge node [above] {Input\\$t\leq1$\\$w=A$} node [below] {$t:=0$} (s2)
+                    edge node [left,xshift=-1mm] {Alarm\\$t>1$\\$w\neq A$} (s4)
+                (s2) edge node [above] {Input\\$t\leq1$\\$w=AB$} node [below] {$t:=0$} (s3)
+                    edge node [left,yshift=2mm] {Alarm\\$t>1$\\$w\neq AB$} (s4)
+                (s3) edge [bend right] node [above] {Open $t\leq1,\ w=ABC,\ t:=0,\ c:=0,\ w:=\epsilon$} (s0)
+                    edge node [right,xshift=5mm] {Alarm\\$t>1$\\$w\neq ABC$} (s4);
+
+        \end{tikzpicture}
+        \caption{Example of a secured door, with timed passcode entry.}
+        \label{fig:expass}
+    \end{center}
+\end{figure}
+\end{ex}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% STORMED HA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{STORMED Hybrid Systems}
+STORMED HA are another class of hybrid automata, with similarities to o-minimal HA. But the reset map on the transitions are not memory-less as they are in o-minimal HA. Before defining a STORMED hybrid system we need to define a few restrictions on hybrid automata.
+
+A hybrid automaton $\mathcal{A}$ has \emph{separable guards} if $\exists d_{min} > 0$ such that for every pair of distinct edges $e_{1},e_{2}\in E$,
+$\min\{\| x_{1}-x_{2}\| : x_{1}\in g(e_{1}) \text{ and } x_{2}\in g(e_{2})\} \geq d_{min}$. The guards of $\mathcal{A}$ are said to be $d_{min}$-separable. By $\| \cdot \|$ we denote the euclidean distance.
+A hybrid automaton $\mathcal{A}$ is \emph{definable} in an o-minimal structure $\mathcal{S}$, if all its initial states, invariants, flows, resets and guards are definable in $\mathcal{S}$.
+The flow function of $\mathcal{A}$ is \emph{monotonic} with respect to a vector $x\in \val(V)$ if there exists an $\epsilon > 0$ such that for every $\ell\in L$ and $y\in\val(V)$ and $t,\tau \geq 0$
+\[
+c \cdot (f(\ell)(x)(t+\tau)-f(\ell)(x)(t)) \geq \epsilon\| f(\ell)(t+\tau)-f(\ell)(t)\|,
+\]
+This flow function is called $(\epsilon,x)$-monotonic.
+We denote by $\cdot$ the dot-product between vectors.
+The set all of resets $r$ of $\mathcal{A}$ is said to be \emph{monotonic} with respect to $x\in\val(V)$ if $\exists \epsilon,\zeta\geq0$ such that for every $e=(\ell,a,\ell')\in E$, and $y_{1},y_{2}\in val(V)$ such that $val(V)=y_{1}$ when taking the transition on $e$ and $y_{2}\in r(e)(V)$ we have
+\begin{itemize}
+    \item if $\ell=\ell'$ then either $y_{1}=y_{2}$ or $x\cdot(y_{2}-y_{1})\geq\zeta$ and
+    \item if $\ell\neq\ell'$ then  $x\cdot(y_{2}-y_{1})\geq\epsilon\|x_{2}-x_{1}\|.$
+\end{itemize}
+A collection of such reset conditions is called $(\epsilon,\zeta,x)$-monotonic.
+The flow function satisfies the \emph{time-independent semi-group} property as the $f(\ell)(x)$ is continuous and $f(\ell)(x)(0)=\val(x)$ $\ell\in L$ $x\in V$ and for every $t\geq 0$ and $x'\in \val(V)$ if $f(\ell)(x)(t) = x'$ then for every $t'\geq0$ we have that $f(\ell)(x)(t+t')=f(\ell)(x)(t')$.
+
+\begin{defi}[STORMED HS \cite{Vladimerou2009}]
+A \emph{STORMED hybrid system} is a tuple $(\mathcal{A},\mathcal{S},x,b_{-},b_{+},d_{min},\epsilon,\zeta)$ where $\mathcal{A}$ is a hybrid automaton, $\mathcal{S}$ is an o-minimal structure, $b_{-},b_{+},d_{min}\in\mathbb{R}$ and $x\in \val(V)$ is a vector such that the following are satisfied:
+\begin{itemize}
+    \item the guards of $\mathcal{A}$ are $d_{min}$-\textbf{S}eparable;
+    \item the flows of $\mathcal{A}$ are \textbf{T}ISG (Time-Independent Semi-Group);
+    \item $\mathcal{A}$ is definable in the \textbf{O}-minimal structure $\mathcal{S}$;
+    \item \textbf{R}esets and flows are \textbf{M}onotonic, $(\epsilon,\zeta,x)$-monotonic and $(\epsilon,x)$-monotonic respectively.
+    \item \textbf{E}nds are \textbf{D}elimited: $\forall e=(\ell,a,\ell')\in E$ we have
+    $\{val(x)\cdot y : y\in g(e)\in(b_{-},b_{+})$ meaning that the projection of each of the guard conditions on $val(x)$ lies in the open interval $(b_{-},b_{+})$.
+\end{itemize}
+\end{defi}
+
+\begin{ex}[\cite{Vladimerou2012}]
+The hybrid automaton in Figure~\ref{fig:exstormed} is stormed as the guards are $1$-separable and delimited. The reset conditions are monotonic (as there are none) and the flow functions are TIGS and monotonic.
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[node distance=5cm,every state/.style={rectangle}]
+            \node [state,initial] (s0) {$l_{0}$\\$\dot{x}_{1}=3$\\$\dot{x}_{2}=2$};
+            \node [state] (s1) [right of = s0] {$l_{1}$\\$\dot{x}_{1}=1$\\$\dot{x}_{2}= \begin{cases} 3 & x_{1}>0 \\ \exp(2) & \text{otherwise} \end{cases}$ \\ $0\leq x_{2}\leq 10$};
+
+            \path[->] (s0) edge [bend left=20] node [above] {a\\$0\leq x_{1}\leq 1$} node [below] {$0\leq x_{2}\leq1$} (s1)
+                (s1) edge [bend left=20] node [above] {b\\$3\leq x_{1}\leq 4$} node [below] {$2\leq x_{2}\leq3$} (s0);
+        \end{tikzpicture}
+        \caption{Example of a stormed hybrid automaton.}
+        \label{fig:exstormed}
+    \end{center}
+\end{figure}
+\end{ex}

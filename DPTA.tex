@@ -1,0 +1,139 @@
+The symbolic model checking and abstractions of probabilistic timed automata have been studied extensively. \cite{Sproston2001} uses region graphs as the abstraction of PTA. A \emph{region graph} is a PTS where the states are equivalence classes of the states of a PTA, based on their involvement in properties. \cite{Kwiatkowska2007} uses symbolic algorithms to model check the properties and quantitative abstraction refinement to abstract the PTA. This abstraction is described in \cite{Kattenbelt2010}. A survey of techniques used for verification of properties in PTA can be found in \cite{Norman2013}.
+
+%
+% \comm{the rest of this section will most probably be useless unless i want to just copy and paste some thms together.}
+%
+% Let us restrict our definition of probabilistic timed automata (Definition \ref{def:PTA}) to contain transitions with discrete distributions and tightened guards.
+%
+% We also assume that our the set of continuous variables consist of the union of continuous clocks $V$ and the formula clocks $Z$.
+%
+% \begin{defi}[Tightened Guard \cite{Sproston2001}]
+% For a probabilistic timed automaton $\mathcal{T}$, any location $\ell\in L$ and distribution $p\in t(\ell,a)$ with guard $g(e)$, where $e=(\ell,a,\ell')$ the \emph{tightened guard} $g'(e)$ is
+% \[
+%     g'(e) = g(e) \cap \Inv(\ell) \bigcap_{\ell'\in support(p)} [r(e)]\Inv(\ell')
+% \]
+% where $[r(e)]\Inv(\ell')$ denotes the set of valuations which lie in $\Inv(\ell')$ when the variables are reset according to $r(e)$.
+% \end{defi}
+%
+% This tightened guard assures that the discrete transitions of the hybrid automaton are defined to admissible states of $\mathcal{T}$.
+%
+% \begin{defi}[Admissible State]
+% A state of $\mathcal{T}$ is the pair $(\ell,x)\in L\times\val(V)$ and is \emph{admissible} if $x\in \Inv(\ell)$.
+% \end{defi}
+%
+% We can now define the probabilistic transition system with respect to a probabilistic timed automaton, containing these restrictions.
+%
+% \begin{defi}[Semantics of a probabilistic timed automaton \cite{Sproston2001}]
+% Let $\mathcal{T}=(V,L,A,\Init,\Inv,E,f,t)$ be a probabilistic timed automaton. Then the probabilistic transition system $\mathcal{P}_{T}=(Q,Q_{0},L,A,t)$ of $\mathcal{T}$ is defined as
+% \begin{itemize}
+%     \item $Q=L\times \val(V)$ is the set of states
+%     \item $q_{0} = \Init$ is the set of initial states
+%     \item $L:S\rightarrow 2^{AP}$ is the labelling function which assigns to states atomic propositions
+%     \item $A=\{p : p\in t(\ell,a),\ell\in L, a\in A\}\cup\val(V)$ is the set of actions
+%     \item for each state $q=(\ell,x)\in Q$ let $t_{P}(q,a)=cont(q,a)\cup disc(q,a)$ be the smallest set of distributions such that
+%     \begin{itemize}
+%         \item for each $\delta\in\mathbb{R}_{\geq0}$ there exists $(\delta,\mathcal{D}((\ell,x+\delta),a))\in cont(q,a)$ if and only if $x+\delta\in \Inv(\ell)$, where $\mathcal{D}$ denotes the Dirac distribution;
+%         \item for each $e=(\ell,a,\ell')\in E$ of $\mathcal{T}$ there exists $(p,\tilde{p})\in disc((\ell,x),a)$ if and only if $p\in t(\ell,a)$, $x\in g(e)$ and $\tilde{p}\in\mu(Q)$ is such that for any $(\ell',y)\in Q$
+%         \[
+%             \tilde{p}(\ell',y) = \sum_{\substack{r(e)\in(\mathbb{N}\cup\{\bot\})^{n}\& \\y=x[r(e)]}}p(\ell')
+%         \]
+%         where $y=x[r(e)]$ indicates that $y$ is equals to the valuation of the variables after being reset.
+%     \end{itemize}
+% \end{itemize}
+% \end{defi}
+%
+% However the transition system $\mathcal{P}_{T}$ of a PTA $\mathcal{T}$ is still infinite. To be able to model check the PTA reliably we need to induce a probabilistic transition system that has a finite number of states.
+%
+% \begin{defi}[Clock Equivalence \cite{Alur1994}]
+% Let $\mathcal{T}$ be a PTA, $\phi$ a PTCTL formula and $c=c_max(\mathcal{T},\phi)$ be the maximal constant that any system clock $x\in V\cup Z$ is compared to in any of the invariant or guard conditions of $\mathcal{T}$ or in a zone subformula of $\phi$. For the $x,y\in\val(V\cup Z)$ we have that $x$ and $y$ are clock equivalent $x\equiv^{c}y$ if and only if
+% \begin{itemize}
+%     \item for all variables $i\in V\cup Z$ either $\lfloor x_{i}\rfloor = \lfloor y_{i}\rfloor$ or $x_{i}>c$ and $y_{i}>c$ and
+%     \item for each variable $i,j\in V\cup Z$ either $frac(x_{i}-x_{j}) = frac(y_{i}-y_{j})$ or both $x_{i}-x_{j}>x$ and $y_{i}-y_{j}>c$,
+% \end{itemize}
+% where $\lfloor t \rfloor$ is the integer part of $t$ and $frac(t)$ is the fractional part, such that $t=\lfloor t \rfloor + frac(t)$.
+% \end{defi}
+%
+% \begin{defi}[Region Equivalence]
+% Let $\mathcal{T}$ be a probabilistic timed automaton, and $\phi$ a PTCTL formula. Two states $(\ell,x),(\ell',y)\in Q$ of the probabilistic transition system $\mathcal{P}_{T}$ are \emph{region equivalent} $(\ell,x) \equiv_{reg} (\ell',y)$ if and only if $\ell=\ell'$ and $x\equiv^{c} y$.
+% We denote by $Reg_{T}^{\phi}(V\cup Z)$ the set of all regions of the PTA $\mathcal{T}$ and the PTCTL formula $\phi$.
+% \end{defi}
+%
+%
+% \begin{defi}[Probabilistic Region Graph]
+% The \emph{probabilistic region graph} is the probabilistic transition system $[\mathcal{P}_{T}]=([Q],[Q_{0}],[L],[A].[t])$ defined as follows
+% \begin{itemize}
+%     \item $[Q] = Reg_{T}^{\phi}(V\cup Z)$, such that the set of regions is the state set;
+%     \item $[Q_0]\subseteq [Q]$ the set of initial states is the set of regions of the form $(\Init, [0])$;
+%     \item $[L]:[Q]\rightarrow 2^{[AP]}$ the labelling function is defined as
+%     \[
+%     [L](\ell,x) = L(\ell)\cup\{\pi_{\zeta}\in [AP] : x\in \zeta, \zeta\in sub(\phi)\cap Zone(V\cup Z)\}
+%     \]
+%     where $[AP]=AP\cup\{\pi_{\zeta}: \zeta\in sub(\phi)\cap Zone(\mathcal{T},\phi)$;
+%     \item $[A] = A \cup \{\theta_{p} : p\in t(\ell,a), (\ell,a,\cdot)\in E\}\cup\{\tau\}$;
+%     \item $[t]:[Q]\times[A]\rightarrow \mu(Q)$ is defined as, for each $(\ell,x)\in[Q]$  $[t]((\ell,x),a)=[Time]((\ell,x),a)\cup [Disc]((\ell,x),a)$ be the smallest set of distributions such that
+%         \begin{itemize}
+%             \item if there exists a time successor $x'$ of $x$ such that $x'\in \Inv(\ell)$ then $[Time]((\ell,x),a)=\{\tau,\mathcal{D}((\ell,x'),a)\}$ otherwise $[Time]((\ell,x),a)=\emptyset$.
+%             \item there exists $\bar{p}\in [Disc]((\ell,x),a)$ if and only if $\exists p\in t(\ell,a)$ and $x\in g(\ell,a,\cdot)$ and where $\bar{p}$ is such that for any region $(\ell',y)\in[Q]$
+%             \[
+%                 \bar{p}(\ell',y)=\sum_{v\in V \& y=x[v=0]} p(v',X).
+%             \]
+%         \end{itemize}
+% \end{itemize}
+% \end{defi}
+%
+%
+% \begin{defi}[Discrete Progress]
+% Let $\mathcal{T}$ be a PTA and $\phi$ a PTCTL formula. For $[\mathcal{P}_{T}]$ the path
+% \[
+% w = (\ell_{0},x_{0}) \overset{\sigma_{0},p_{0}}{\rightarrow} (\ell_{1},x_{1}) \overset{\sigma_{1},p_{1}}{\rightarrow} \cdots
+% \]
+% exhibits \emph{discrete progress} if $\forall i\in\mathbb{N}$, $\exists j > i$ such that $\sigma_{j}\neq\tau$.
+% \end{defi}
+%
+%
+% \begin{defi}[Zero Equivalence Class]
+% For $x_{i}\in V \cup Z$ the equivalence class $[\alpha]$ is said to be \emph{$x_{i}$-zero} if and only if $a_{i}=0$ for each $a_{i}\in[\alpha]$. We say that a region is $(\ell,\alpha)$ is $x_{i}$-zero if $\alpha$ is $x_{i}$-zero.
+% \end{defi}
+%
+% \begin{defi}[Unbounded Equivalence Class]
+% For $x_{i}\in V\cup Z$ the equivalence class $[\alpha]$ is said to be \emph{$x_{i}$-unbounded} if and only if $a_{i}>c_{max}(\mathcal{T},\phi)$ for each $a_{i}\in[\alpha]$. We say that a region is $(\ell,\alpha)$ is $x_{i}$-unbounded if $\alpha$ is $x_{i}$-unbounded.
+% \end{defi}
+%
+% \begin{defi}[Time Progress]
+% Let $\mathcal{T}$ be a PTA and $\phi$ a PTCTL formula. The path $w$ of $[\mathcal{P}_{T}]$
+% \[
+%  w = (\ell_{0},x_{0}) \overset{\sigma_{0},p_{0}}{\rightarrow} (\ell_{1},x_{1}) \overset{\sigma_{1},p_{1}}{\rightarrow} \cdots
+% \]
+% is
+% \begin{description}
+%     \item[possibly progressive] if and only if for each clock $y\in V\cup Z$ either
+%     \begin{itemize}
+%         \item for every $i\in\mathbb{N}$ $\exists j \geq i$ such that $x_{j}$ is an $y$-zero class or
+%         \item $\exists i\in\mathbb{N}$, such that $\forall j\geq i$ $x_{j}$ is an $y$-unbounded class.
+%     \end{itemize}
+%     \item[zero] if and only if there exists a block $y\in V$ and $i\in\mathbb{N}$ such that for all $j > i$ $x_{j}$ is $y$-zero.
+% \end{description}
+% The path $w$ exhibits $\emph{time progress}$ if and only if it is possibly progressive and not zero.
+% \end{defi}
+%
+%
+% \begin{defi}[Divergent Path]
+% Let $\mathcal{T}$ be a PTA and $\phi$ a PTCTL formula. For the probabilistic region graph $[\mathcal{P}_{T}]$ a path $w\in Path^{[P_{T}]}$ is \emph{divergent} if and only if it exhibits discrete progress and time progress.
+% \end{defi}
+%
+% \begin{defi}[Divergent Adversary]
+% Let $\mathcal{T}$ be a PTA and $\phi$ a PTCTL formula. An adversary $A$ of the probabilistic region graph $[\mathcal{P}_{T}]$ is \emph{divergent} if and only if
+% \[
+% prob^{B}(\{w\in Path^{B} : w \text{ is divergent } \}) = 1.
+% \]
+% % Let $[Div]$ be the set of divergent adversaries of $[\mathcal{P}_{T}]$.
+% \end{defi}
+%
+% \begin{prop}[\cite{Sproston2001}]
+% Let $\mathcal{T}$ be a PTA and $\phi$ a PTCTL formula. Then a state $(\ell,x)\in S$ of the PTS $\mathcal{P}_{T}$ satisfies $\phi$ over divergent adversaries if and only if the region $(\ell,[x])\in [\mathcal{P}_{T}]$ of the probabilistic region graph $[\mathcal{P}_{T}]$ satisfies the $PBTL$ formula $\Phi$ interpreted over divergent adversaries, where $\Phi$ is derived from $\phi$.
+% \end{prop}
+%
+%
+% \begin{ex}
+% Running example goes here
+% \end{ex}

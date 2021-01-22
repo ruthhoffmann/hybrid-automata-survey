@@ -1,0 +1,44 @@
+%\usepackage[a4paper,margin=3cm]{geometry}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+%llbracket and rrbracket
+\usepackage{stmaryrd}
+
+\usepackage[boxed,noline]{algorithm2e}
+
+\usepackage{float}
+\usepackage{tikz}
+
+\usetikzlibrary{automata}
+
+%Defs and thms
+\theoremstyle{definition}
+\newtheorem{defi}{Definition}
+\newtheorem{ex}{Example}
+
+%\theoremstyle{remark}
+%\newtheorem*{rem}{Remark}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{prob}[thm]{Problem}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+
+%operators
+\newcommand{\val}{\operatorname{val}}
+\newcommand{\until}{\ \mathcal{U}}
+\newcommand{\Init}{\mathit{Init}}
+\newcommand{\Inv}{\mathit{Inv}}
+
+\newcommand{\tfin}{t_{\mathit{fin}}}
+\newcommand{\tcont}{t_{\mathit{cont}}}
+\newcommand{\stat}{\mathit{stat}}
+
+\tikzset{every node/.style={align=center}, >= latex, font=\scriptsize}
+
+\newcommand{\comm}[1]{{\color{red}{\textsf{[#1]}\marginpar{?? [?]}}\\}}

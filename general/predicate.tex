@@ -1,0 +1,221 @@
+\comm{looks like predicate abs is only for linear systems, although \cite{Maler2014a} might have an extension to it.}
+In \cite{Alur2002} the predicate abstraction is investigated for linear hybrid automata, as the predicates over which the abstraction is constructed are linear themselves.
+
+\begin{defi}[$k$-dimensional Vector of Linear Predicates]
+A \emph{$k$-dimensional vector of linear predicates} $\Pi=(\pi_{1},\ldots,\pi_{k})$ consists of $n$-dimensional linear predicates of the form $\pi_{j}(x)=\sum_{i=1}^{n}a_{i}x_{i}+a_{n+1}\sim0$ where $\sim\in\{\geq,>\}$ and $\forall i\in\{1,\ldots,n+1\}, a_{i}\in\mathbb{R}$.
+\end{defi}
+
+The vector could consist of all the invariant and guard conditions, or linear predicates of the properties of the system.
+
+\begin{defi}[Abstract State Space \cite{Alur2002}]
+Given a hybrid automaton $\mathcal{A}$ and a $k$-dimensional vector of linear predicates $\Pi$, we can define an \emph{abstract state} as $(\ell,\mathbf{b})$ where $\ell\in L$ and $\mathbf{b}\in \{0,1\}^{k}$. The \emph{abstract state space} for $\Pi$ hence is $Q=L\times\{0,1\}^{k}$.
+\end{defi}
+
+The set $\{0,1\}$ represents the boolean truth values, we will denote it as $\mathbb{B}=\{0,1\}$. The next definition shows that if all predicates are linear, then the defined function is a convex polyhedron for any $\mathbf{b}\in\mathbb{B}^{k}$.
+
+A \emph{convex polyhedron} is the set of solutions to the system of linear inequalities
+\[
+m x \leq y
+\]
+where $m\in\mathbb{R}^{n}\times\mathbb{R}^{k}$, $b\in\mathbb{R}^{n}$ and $x$ is a $k$-vector of variables.
+
+
+\begin{defi}[Concretisation Function \cite{Alur2002}]
+Let $C_{\Pi} : \mathbb{B}^{k}\rightarrow 2^{\val(V)}$ be a \emph{concretisation function} for a vector of linear predicates $\Pi=(\pi_{1},\ldots,\pi_{k})$, defined as
+ $C_{\Pi}(\mathbf{b})=\{x\in\val(V) : \forall i \in \{1,\ldots,k\}, \pi_{i}(x) = b_{i}\}$. A vector $\mathbf{b}\in\mathbb{B}^{k}$ is \emph{consistent} with respect to $\Pi$ if
+ $C_{\Pi}(\mathbf{b})\neq\emptyset$. We say that an abstract state $(\ell,\mathbf{b})$ is \emph{consistent} with respect to $\Pi$ if $\mathbf{b}$ is consistent with respect to $\Pi$.
+ \end{defi}
+
+ \begin{defi}[Abstraction \cite{Alur2002}]
+Given a hybrid automaton $\mathcal{A}$ we define its \emph{abstract transition system} with respect to a vector of linear predicates $\Pi$ to be $T_{\Pi}=(Q,Q_{0},t_{\Pi})$, where
+\begin{description}
+\item[$Q=L\times\mathbb{B}^{k}$]{is the abstract state space,}
+\item[$Q_{0}\subseteq Q$]{is the set of initial states $Q_{0}=\{(\ell,\mathbf{b}): \exists x\in C_{\Pi}(\mathbf{b}, (\ell,x)\in Init)\}$.}
+\item[$t_{\Pi}\subseteq Q\times Q$]{is the transition relation
+    $t_{\Pi}(\ell,\mathbf{b})=(\ell',\mathbf{b}')$ if and only if
+    $\exists x \in C_{\Pi}(\mathbf{b})$, $y\in C_{\Pi}(\mathbf{b}')$ such that $(\ell,a,\ell')\in E$, $a\in A$ and $x\in Inv(\ell) \land x\in g(e)$ and
+    $y\in r(e) \land y\in Inv(\ell')$ or $\ell=\ell'$ and $f(\ell)(x)$ evaluates at some time to $y$ and $f(\ell)(x)\in Inv(\ell)$.}
+\end{description}
+\end{defi}
+We will need to distinguish the transition relation between discrete transitions and continuous flow, so we will respectively introduce $t_{\Pi,D}, t_{\Pi,C}\subseteq Q\times Q$,
+\[
+t_{\Pi,D}(\ell,\mathbf{b})=(\ell',\mathbf{b}') \leftrightarrow \exists(\ell,a,\ell')\in E, x\in C_{\Pi}(\mathbf{b})\cap g(e) : r(e)(x) \in C_{\Pi}(\mathbf{b}l),
+\]
+\[
+t_{\Pi,C}(\ell,\mathbf{b})=(\ell',\mathbf{b}') \leftrightarrow \exists x \in C_{\Pi}(\mathbf{b}), f(\ell)(x)\in Inv(\ell) \land f(\ell)(x) = y \text{ at some time}.
+\]
+
+First we will show how the discrete successor of the abstracted transition system can be computed. For that we denote by $\Pi\circ r = (\pi_{1}\circ r, \ldots, \pi_{k}\circ r)$, the application of the reset map such that $\pi_{i}(r(e))\in\mathbb{B}$
+
+\begin{lem}[\cite{Alur2002}]
+Given $\mathbf{b}\in\mathbb{B}^{k}$ and $\Pi=(\pi_{1},\ldots,\pi_{k})$ and a reset map $r(e)$ then
+\[
+x\in C_{\Pi\circ r}(\mathbf{b}) \leftrightarrow r(e)(x)\in C_{\pi}(\mathbf{b}).
+\]
+\end{lem}
+
+\begin{thm}
+Given $(\ell,\mathbf{b})\in Q$, with respect to $\Pi$, an edge $e=(\ell,a,\ell')\in E$ and the set of points satisfying all guards $g(e)$,
+$G_{e}=\{x\in\val(V) : \forall f\in g(e), f(x)=1\}$ we have
+$\forall \mathbf{v}\in\mathbb{B}^{k}$
+\[
+C_{\Pi\circ r}(\mathbf{v})\cap C_{\Pi}(\mathbf{b})\cap G_{e} \neq \emptyset \leftrightarrow t_{\Pi,D}(\ell,\mathbf{b}) = (\ell',\mathbf{v}).
+\]
+\end{thm}
+
+Next we attempt to compute the set of successor states during continuous behaviour.
+This approximation is computed in Algorithm~\ref{alg:predoverappr}. In each iteration $k$ we calculate an over-approximation of the reachable set in the time $[kr, (k+1)r]$, $APost^{\Pi}_{C}(\ell,P,[0,r])$, where $\ell\in L$, $P$ is a convex polyhedron, and $r$ a time.
+
+
+\begin{algorithm}[H]
+\SetKwInOut{Input}{Input}
+\Input{$(\ell,\mathbf{b})$}
+$R_{c} := \emptyset$\;
+$P^{0} := C_{\Pi}(\mathbf{b})$\;
+$k := 0$\;
+\Repeat{$P^{k+1}\subseteq P^{k}$}{
+    $P^{k+1} := APost^{\Pi}_{C}(\ell,P^{k},[0,r])$\;
+    \ForAll{$(\ell,\mathbf{b}')\in Q\setminus R_{c}$}{
+        $P' := C_{\Pi}(\mathbf{b}')$;
+        \If{$P^{k+1}\cap P'\neq\emptyset$}{
+            $R_{c} := R_{c} \cup (\ell,\mathbf{b}')$\;
+        }
+    }
+    $k:=k+1$\;
+}
+\Return{$R_{c}$}
+\caption{Over Approximation Algorithm for continuous successors \cite{Alur2002}}
+\label{alg:predoverappr}
+\end{algorithm}
+
+
+
+There is a further approach to predicate abstraction, where the predicates are formulae of polynomials \cite{Tiwari2002,Tiwari2008}. The resulting discrete transition system $\mathcal{T}$ consists of the states $Q$, the initial states $Q_{0}$ and the transition function $t$. It is important to notice that the set of propositions $\Pi$ is replaced by a set of polynomials, and the satisfaction function is in relation to the first order logic of the reals.
+
+Algorithm~\ref{alg:papoly} describes how the polynomial set is computed. We start with a set of polynomials $P_{0}$, which can consist of polynomials that are part of a property of the system, or polynomials which are part of the guard maps. Then we add these polynomials and their time derivatives to $P$ and iteratively go through the polynomials $p\in P$. If the time derivative $\dot{p}$ of $p$ is not in $P$, and the time derivative is not equal to a multiple $a\in\mathbb{R}$ of some existing polynomial $q\in P$ ($\dot{p}\neq aq$), or it is not equal to a constant
+$c\in\mathbb{R}$ ($\dot{p}\neq c$), then we add $\dot{p}$ to $P$.
+
+\begin{algorithm}[H]
+
+\SetKwInOut{Input}{Input}
+\Input{$P_{0}$}
+$P:=P_{0}$
+\While{$p\in P$}{
+    \If{$\dot{p}\notin P$ and $\dot{p}\neq aq$ or $\dot{p}\neq c$}{
+        Add $\dot{p}$ to $P$\;
+    }
+}
+\Return{$P$}
+\caption{Obtaining the set of polynomials \cite{Tiwari2002}.}
+\label{alg:papoly}
+\end{algorithm}
+
+Let $\mathcal{A}=(V,L,A,Init,Inv,E,f)$ be a hybrid system and $P\subseteq\mathbb{R}[V]$ be a set of polynomials over $V$. Then the abstract transition system
+$\mathcal{T}=(Q,Q_{0},t,\mathbb{R},\models)$ is $Q=L\times Q_{P}$, where $Q_{P}=\{q_p : p\in P\}$, $Q_{0}\subseteq\val(Q)$ and $t\subseteq Q\times Q$. The discrete variables $Q_{P}$ are evaluated over the set $\{pos,neg,zero\}$. By evaluating the variables in $Q_{P}$ we mean that if
+$(q_{p1}\mapsto pos, q_{p2}\mapsto neg, q_{p3}\mapsto zero)$ then this is equivalent to the conjunction of polynomials $p_{1}>0 \land p_{2}<0\land p_{3}=0$, $p_{1},p_{2},p_{3}\in P$.
+
+%We define the abstraction function for $x\in \val(V)$ to be
+%\[
+%abs(x) = \bigwedge_{i\in J_{1}} p_{i} > 0 \land \bigwedge_{i\in J_{2}} p_{i} = 0 \land\bigwedge_{i\in J_{3}} p_{i} < 0
+%\]
+%where $J_{1}\cup J_{2}\cup J_{3}=\{1,\ldots,|P|\}$ is a partition such that $i\in J_{1}$ if and only if $p_{i}(x) > 0$, $i\in J_{2}$ if and only if $p_{i}(x) = 0$, and $i\in J_{3}$ if and only if $p_{i}(x) < 0$.
+
+The initial states
+\begin{equation}
+Q_{0}= \bigvee \{q \in \val(Q) : \exists X \text{ such that } q\land p \},
+\label{eq:painit}
+\end{equation}
+where $p$ is the first order formula constructed from the initial states $Init$.
+
+Algorithms~\ref{alg:padisc} and \ref{alg:pacont} show how the discrete transitions and continuous flow are abstracted. Notice that the sign of $\dot{p}$ can be read off from $q_{p2}$ if $\dot{p}$ was added to $P$, in Algorithm~\ref{alg:papoly}.
+
+\begin{algorithm}[H]
+\SetKwInOut{Input}{Input}
+%\KwResult{$((\ell,q_{p}),(\ell',q_{p}))\in t$}
+\Input{$e=(\ell,a,\ell')\in E$ with $g(e)$ and $r(e)$}
+\If{$\exists X$ such that $(g(X)\land q_{p}(X))$}{
+    \Return{$((\ell,q_{p}),(\ell',q_{p}))\in t$}
+}
+\caption{Abstraction of the discrete transitions.}
+\label{alg:padisc}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\While{$p\in P$} {
+    \If{$p<0$ is part of $q_{p1}$}{
+        \If{$q_{p1} \Rightarrow \dot{p}<0$ or $q_{p1} \Rightarrow \dot{p}=0$}{
+            \If{$p<0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+        }
+        \If{$q_{p1} \Rightarrow \dot{p}>0$}{
+            \If{$p<0$ or $p=0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+
+        }
+        \If{$\dot{p}$ cannot be deduced from $q_{p1}$}{
+            \If{$p<0$ or $p=0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+        }
+    }
+    \If{$p=0$ is part of $q_{p1}$}{
+        \If{$q_{p1} \Rightarrow \dot{p}<0$}{
+            \If{$p<0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+        }
+        \If{$q_{p1} \Rightarrow \dot{p}=0$}{
+            \If{$p=0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+        }
+        \If{$q_{p1} \Rightarrow \dot{p}>0$}{
+            \If{$p>0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+        }
+        \If{$\dot{p}$ cannot be deduced from $q_{p1}$}{
+            \If{$p<0$, $p=0$ or $p>0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+        }
+    }
+    \If{$p>0$ is part of $q_{p1}$}{
+        \If{$q_{p1} \Rightarrow \dot{p}<0$ or $q_{p1} \Rightarrow \dot{p}=0$ or $q_{p1} \Rightarrow \dot{p}>0$}{
+            \If{$p>0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+        }
+        \If{$\dot{p}$ cannot be deduced from $q_{p1}$}{
+            \If{$p<0$ or $p=0$ is part of $q_{p2}$}{
+                \Return{$((\ell,q_{p1}),(\ell,q_{p2}))\in t$}
+            }
+        }
+    }
+}
+\caption{Abstraction of the continuous flow.}
+\label{alg:pacont}
+\end{algorithm}
+
+
+\begin{thm}[\cite{Tiwari2002,Tiwari2008}]
+Let $\mathcal{A}$ be a hybrid automaton, and $P\subseteq\mathbb{R}[V]$ be finite set of polynomials over the set $V$ of real variables. If $\mathcal{T}=(Q,Init,t,\mathbb{R},\models)$ is the discrete transition system constructed by the methods described in Algorithm~\ref{alg:padisc} and Algorithm~\ref{alg:pacont}, and Formula~\ref{eq:painit} then $\mathcal{T}$ is an abstraction for $\mathcal{A}$.
+\end{thm}
+
+This abstraction technique is utilised in the HyTech symbolic model checker \cite{Henzinger1997}.
+
+
+%\cite{Alur2002,Graf1997,Maler2014a,Nicollin1993, Tiwari2002,Tiwari2008}
+
+%\cite{Graf1997} is pred abstr with theorem proving
+
+%\cite{Maler2014a} allures to pred abstr
+
+%\cite{Tiwari2002} looks at polynomials, it might need it's own section
+%When looking at how the properties/reachability are abstracted within predicate abstraction,
+%\begin{itemize}
+%\item{Polyhedra}
+%\item{Ellipsoids}
+%\end{itemize}

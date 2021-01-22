@@ -1,0 +1,61 @@
+% \vspace{1cm}
+% \noindent
+% \cite{Abate2010}
+% \begin{itemize}
+%     \item{Given a stochastic hybrid system, we use numerical tools to generate a finite state Markov chain, together with guarantees on the level of approximation introduced in the process. The properties of the Markov chain (in our case the probability of remaining in a certain region of the state space) are then analyzed using a model checker. The result is combined with the approximation guarantees to provide an overall guarantee about the probability of satisfying the original property of interest for the stochastic hybrid system.}
+%     \item{discrete time stochastic hybrid system to dtmc}
+% \end{itemize}
+%
+% \noindent
+% \cite{Hahn2011}
+% \begin{itemize}
+%     \item{game-based abstraction of a PHA which is semantically a (stochastic) 2-player game; hard and gives lower bound}
+%     \item{environment abstraction, also game-based but using collaborative strategies; easier and gives upper bound}
+%     \item{PHA has 2 players, controller and environment; each abstraction introduces a 3rd player, before reducing it back to 2 players.}
+%     \item{\textbf{check bibliography}}
+% \end{itemize}
+%
+% \noindent
+% \cite{Alur2000}
+% \begin{itemize}
+%     \item{Abstraction -- Given a hybrid system and some desired property, one extracts a finite, dis- crete system while preserving all properties of interest. This is achieved by constructing suitable, finite, and computable partitions of the state space of the hybrid system.}
+%     \item{Preserving LTL properties leads to special partitions of the state space given by language equivalence relations, whereas CTL properties are abstracted by bisimulations.}
+%     \item{Transition system; quotient transition system (state space is divided up into equivalence classes)}
+%     \item{hybrid system; rectangular automaton; multirate automaton; timed automaton; o-minimal hybrid system; HS with linear differential equations; HS with linear control system;}
+%     \item{Discrete abstractions are equivalent to finding finite quotients.}
+% \end{itemize}
+%
+%
+% \noindent
+% \cite{Alur2002}
+% \begin{itemize}
+%     \item{Predicate abstraction}
+%     \item{Polyhedra/ellipsoids used for approximating the set of reachable states}
+%     \item{Checkmate}
+%     \item{d/dt}
+%     \item{level-sets method}
+%     \item{A verifier based on predicate abstraction requires three inputs, the (concrete) system to be analyzed, the property to be verified, and a finite set of boolean predicates over system variables to be used for abstraction.}
+%     \item{Tools such as Bandera, SLAM, and Feaver have successfully applied predicate abstraction for analysis of C or Java programs.}
+%     \item{We develop algorithms for invariant verification of hybrid systems using discrete approximations based on predicate abstractions. Consider a hybrid automaton with $n$ continuous variables and a set $L$ of locations. Then the continuous state-space is $L\times\mathbb{R}^{n}$. For the sake of efficiency, we restrict our attention where all invariants, switching guards, and discrete updates of the hybrid automaton are specified by linear expressions, and the continuous dynamics is linear, possibly with bounded input. For the purpose of abstraction, the user supplies initial predicates $p_1,\ldots, p_k$, where each predicate is a polyhedral subset of $\mathbb{R}^{n}$. In the abstract program, the $n$ continuous variables are replaced by $k$ discrete boolean variables. A combination of values to these $k$ boolean variables represents an abstract state, and the abstract state space is $L \times \mathbb{B}^{k}$. Our verifier performs an on-the-fly search of the abstract system by symbolic manipulation of polyhedra.}
+% \end{itemize}
+%
+% \noindent
+% \cite{Hofbaur2002}
+% \begin{itemize}
+%     \item{Probabilistic hybrid automata}
+%     \item{concurrent PHA, merges hidden Markov models (HMM) with continuous dynamical system models. A cPHA provides a modeling framework that captures probabilistic mode transitions.}
+%     \item{Hidden Markov model}
+%     \item{hybrid mode estimation, tracks and diagnoses cPHA, by creating a hybrid HMM observer. The observer uses the results of continuous state estimates to estimate a system’s mode changes, and coordinates the actions of a set of continuous state observers.}
+% \end{itemize}
+%
+% \noindent
+% \cite{Narasimhan2002}
+% \begin{itemize}
+%     \item{discrete event abstraction}
+% \end{itemize}
+%
+% \noindent
+% \cite{Stauner2002}
+% \begin{itemize}
+%     \item{discrete time refinement}
+% \end{itemize}

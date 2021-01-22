@@ -1,0 +1,371 @@
+\subsection{Non-Probabilistic System and Logics}
+There are different types of abstraction techniques that can be applied to hybrid automata, which we will discuss these in the sections below. The common property of these techniques is that they construct a discrete \emph{transition system} and they show that the abstraction preserves the properties of the original system. Some of the techniques use the properties to build partitions of the hybrid system, which then are abstracted. We also introduce the different classes of logics in which the properties can be expressed.
+\begin{defi}[Transition System \cite{Alur2000}]
+A \emph{transition system} $\mathcal{T}=(Q,Q_{0},\Pi,t,\models)$ consists of
+\begin{description}
+    \item[$Q$]{the finite set of states;}
+    \item[$Q_{0}\subseteq Q$]{the set of initial states;}
+    \item[$\Pi$]{the set of propositions;}
+    \item[$t \subseteq Q\times Q$]{a transition function;}
+    \item[$\models\subseteq Q\times\Pi$]{a satisfaction function.}
+\end{description}
+\end{defi}
+
+The \emph{properties} of a system are desired specifications, e.g. avoiding an unsafe set of states, that the system satisfies. Properties are used to formally verify the system and are described using logical formulae built from atomic propositions. We denote by $\llbracket \phi \rrbracket = \{ q\in Q : q\models \phi\}$ the set of states satisfying the property $\phi$.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LTL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Linear temporal logic can encode logical formulae specifying the future events on paths \cite{Pnueli1977}.
+\begin{defi}[LTL]
+The formulae of \emph{linear temporal logic} (LTL) are defined recursively:
+\begin{description}
+    \item[Propositions]{Every atomic proposition $\phi$ is a formula.}
+    \item[Formulas]{If $\phi_{1}$ and $\phi_{2}$ are formulae then so are the following;
+        \[
+        \phi_{1} \lor \phi_{2},\ \ \phi_{1} \land \phi_{2}, \ \ \lnot \phi_{1}, \ \
+        \phi_{1} \Rightarrow \phi_{2},\ \ \phi_{1} \Leftrightarrow \phi_{2}, \ \ \bigcirc \phi_{1}, \ \ \phi_{1} \until \phi_{2}, \ \ \lozenge \phi_{1}, \ \ \square \phi_{1}.
+        \]}
+\end{description}
+\end{defi}
+ The formulae are interpreted over infinite words of propositions. Let $w=\Pi_{0}\Pi_{1}\ldots$ be a word with $\Pi_{i}$ being a set of propositions, then the satisfaction of a proposition $\phi$ at position $i\in \mathbb{N}$ of $w$ is denoted by $(w,i)\models_{L} \phi$ and holds if and only if $\phi \in \Pi_{i}$. Note that $\models_{L}$ is not the satisfaction relation $\models$ as in the definition of a transition system.
+
+The \emph{next} operator $\bigcirc\phi$ holds for a word $\Pi_{0}\Pi_{1}\Pi_{2}\ldots$ if and only if $\phi$ holds for $\Pi_{1}\Pi_{2}\ldots$. The \emph{until} operator $\phi_{1}\until\phi_{2}$ describes that $\phi_{1}$ is true until $\phi_{2}$ becomes true. The \emph{eventually} operator $\lozenge\phi$ indicates that $\phi$ will be true at some point in $w$. The \emph{always} operator $\square\phi$ describes that $\phi$ must always be true in a word.
+
+
+\begin{defi}[Semantics of LTL]
+Let $\phi_{1},\phi_{2}$ be LTL formulae, $w$ a word of propositions, and $i\in\mathbb{N}$. The semantics of any LTL formula is defined as
+\begin{itemize}
+    \item{$(w,i)\models_{L}\phi_{1}\lor\phi_{2}$ if either $(w,i)\models_{L}\phi_{1}$ or $(w,i)\models_{L}\phi_{2}$;}
+    \item{$(w,i)\models_{L}\phi_{1}\land\phi_{2}$ if both $(w,i)\models_{L}\phi_{1}$ and $(w,i)\models_{L}\phi_{2}$;}
+    \item{$(w,i)\models_{L}\lnot\phi_{1}$ if $(w,i)\not\models_{L}\phi_{1}$;}
+    \item{$(w,i)\models_{L}\phi_{1}\Rightarrow\phi_{2}$ if $(w,i)\models_{L}\lnot\phi_{1} \land \phi_{2}$;}
+    \item{$(w,i)\models_{L}\phi_{1}\Leftrightarrow\phi_{2}$ if $(w,i)\models_{L}(\phi_{1}\Rightarrow\phi_{2})\land(\phi_{2}\Rightarrow\phi_{1})$;}
+    \item{$(w,i)\models_{L}\bigcirc\phi_{1}$ if $(w,i+1)\models_{L}\phi_{1}$;}
+    \item{$(w,i)\models_{L}\phi_{1}\until\phi_{2}$ if there is $j\geq i$ such that $(w,j)\models_{L}\phi_{2}$ and for all $i\leq k < j$ $(w,k)\models_{L}\phi_{1}$;}
+    \item{$(w,i)\models_{L}\lozenge\phi_{1}$ if $(w,i)\models_{L}true\until\phi_{1}$;}
+    \item{$(w,i)\models_{L}\square\phi_{1}$ if $(w,i)\models_{L}\lnot\lozenge\lnot\phi_{1}$.}
+\end{itemize}
+\end{defi}
+
+
+\begin{ex}[LTL Examples]
+The LTL formula to express that the proposition $\phi_{1}$ and $\phi_{2}$ both hold at the same time in a word $w\in L$ at some letter $w_{i}$ until $w_{j}$, with $j\geq i$, at which letter $\lnot \phi_{1}$ holds is expressed as
+\[
+(w,i)\models_{L}(\phi_{1}\land\phi_{2})\until \lnot \phi_{1}.
+\]
+We can express that if $\phi_{1}$ always holds in a word $w\in L$ then eventually $\phi_{2}$ will hold in $w$,
+\[
+(w,i)\models_{L}\square\phi_{1}\Rightarrow\lozenge\phi_{2}.
+\]
+\end{ex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CTL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+We can extend LTL to include existential quantifiers. These types of quantifiers are used in property formulations of transition systems and the satisfaction relation correlates to the satisfaction relation of this extended logic. Computational tree logic was introduced to synthesise concurrent programs \cite{Clarke1982}.
+
+\begin{defi}[CLT]
+The formulae of \emph{computational temporal logic} (CTL) are defined recursively
+\begin{description}
+    \item[Propositions]{Every atomic proposition $\phi$ is a formula.}
+    \item[Formulas]{If $\phi_{1}$ and $\phi_{2}$ are formulae then so are the following;
+    \begin{align*}
+        & \phi_{1} \lor \phi_{2},\ \ \phi_{1} \land \phi_{2}, \ \ \lnot \phi_{1}, \ \
+        \phi_{1} \Rightarrow \phi_{2},\ \ \phi_{1} \Leftrightarrow \phi_{2}, \\
+        & \exists\bigcirc \phi_{1}, \ \ \phi_{1} \exists\until \phi_{2}, \ \
+        \exists\lozenge \phi_{1}, \ \ \exists\square \phi_{1}, \\
+        & \forall\bigcirc \phi_{1}, \ \ \forall\lozenge \phi_{1}, \ \ \forall\square \phi_{1}.
+    \end{align*}}
+\end{description}
+\end{defi}
+
+The difference between LTL and CTL semantics is that LTL is interpreted over words, whereas CTL is interpreted over trees generated by trajectories from a given state of a transition system. So a transition system $\mathcal{T}$ satisfies a proposition $\phi$ if there is a state $q_{0}\in Q$ in $\mathcal{T}$ such that $q_{0}\models \phi$.
+
+The temporal operators $\exists\bigcirc, \exists\until, \exists\lozenge$ and $\exists\square$ are called \emph{possibly next}, \emph{possibly until}, \emph{possibly eventually} and \emph{possibly always} respectively and they refer to the existence of a trajectory starting at a given state. On the other hand, the operators $\forall\bigcirc$ (inevitably next), $\forall\lozenge$ (inevitably eventually) and $\forall\square$ (inevitably always) refer to all trajectories from a given state.
+
+In general we can say that a transition system $\mathcal{T}$ \emph{satisfies} a CTL formula $\phi$ if some initial state of $\mathcal{T}$ satisfies $\phi$.
+
+\begin{defi}[Semantics of CTL]
+Let $q_{0}\in Q$ be a state of a transition system $\mathcal{T}$, and $\phi_{1},\phi_{2}$ CTL formulae, then the semantics of CTL is defined as
+\begin{itemize}
+    \item{$q_{0}\models\phi_{1}\lor\phi_{2}$ if either $q_{0}\models\phi_{1}$ or $q_{0}\models\phi_{2}$;}
+    \item{$q_{0}\models\phi_{1}\land\phi_{2}$ if both $q_{0}\models\phi_{1}$ and $q_{0}\models\phi_{2}$;}
+    \item{$q_{0}\models\lnot\phi_{1}$ if $q_{0}\not\models\phi_{1}$;}
+    \item{$q_{0}\models\phi_{1}\Rightarrow\phi_{2}$ if $q_{0}\models\lnot\phi_{1} \land \phi_{2}$;}
+    \item{$q_{0}\models\phi_{1}\Leftrightarrow\phi_{2}$ if $q_{0}\models(\phi_{1}\Rightarrow\phi_{2})\land(\phi_{2}\Rightarrow\phi_{1})$;}
+    \item{$q_{0}\models\exists\bigcirc\phi_{1}$ if $\exists q_{1}\in Q$ such that
+    $t(q_{0})=q_{1}$ and $q_{1}\models \phi_{1}$;}
+    \item{$q_{0}\models\phi_{1}\exists\until\phi_{2}$ if $\exists q_{0}q_{1}q_{2}\ldots$ a trajectory generated from $q_{0}$ such that $q_{i}\models \phi_{2}$ for some $i\geq 0$ and for all $0\leq j < i$, $q_{j}\models \phi_{1}$;}
+    \item{$q_{0}\models\exists\lozenge\phi_{1}$ if $q_{0}\models true\ \exists\until \phi_{1}$;}
+    \item{$q_{0}\models\exists\square\phi_{1}$ if $\exists q_{0}q_{1}q_{2}\ldots$ generated from $q_{0}$ such that $\forall i\geq 0$ $q_{i}\models\phi_{1}$;}
+
+    \item{$q_{0}\models\forall\bigcirc\phi_{1}$ if $q_{0}\models\lnot\exists\bigcirc\lnot\phi_{1}$;}
+    \item{$q_{0}\models\forall\lozenge\phi_{1}$ if $q_{0}\models\lnot\exists\square\lnot\phi_{1}$;}
+    \item{$q_{0}\models\forall\square\phi_{1}$ if $q_{0}\models\lnot\exists\lozenge\lnot\phi_{1}$.}
+\end{itemize}
+\end{defi}
+
+
+\begin{ex}[CTL Examples]
+The CTL formula
+\[
+q_{0}\models \phi_{1}\exists\until\forall\bigcirc \phi_{2}
+\]
+expresses that there is a path in $\mathcal{T}$ starting at state $q_{0}$ on which $\phi_{1}$ holds until it is inevitable that in the next state $\phi_{2}$ holds.
+We write
+\[
+q_{0}\models\forall\square((\phi_{1}\lor\phi_{2})\land\exists\lozenge\phi_{3})
+\]
+to mean that on all paths starting at $q_{0}$ in $\mathcal{T}$ it is true that either $\phi_{1}$ or $\phi_{2}$ hold and eventually $\phi_{3}$ might hold too.
+\end{ex}
+
+\subsection{Probabilistic Systems and Logics}
+Similarly as for the non-probabilistic case, we introduce the a transition system into which we will abstract probabilistic hybrid automata. Further, as there are probabilistic choices in the system, logics covering this extension need to be introduced, and are below. To be able to determine the probabilities of paths in a transition system, a function---called an \emph{adversary} or \emph{scheduler}---is needed to map the paths onto probabilistic distributions.
+
+\begin{defi}[PTS]
+A \emph{probabilistic transition system} (PTS) $\mathcal{P}=(Q,Q_{0},L,A,t)$
+consists of
+\begin{description}
+    \item[$Q$] (possibly uncountable) set of states
+    \item[$Q_{0}\subseteq Q$] set of initial states
+    \item[$L:Q\rightarrow 2^{AP}$] labelling function, which assigns to each state a set of propositions.
+    \item[$A$] set of actions
+    \item[$t:Q\times A\rightarrow \mu(Q)$] a transition function which assigns state a set of transitions, each transition is labelled with an action and a probability.
+\end{description}
+\end{defi}
+
+
+\begin{defi}[Adversary]
+An \emph{adversary} or scheduler of a probabilistic transition system $\mathcal{P}$ is a function $\mathcal{A}$ mapping every finite path $\pi$ of $\mathcal{P}$ to a distribution such that $\mathcal{A}(\pi)\in t(last(\pi),a)$, where $a\in A$. Let $Adv$ be the set of all adversaries of $\mathcal{P}$.
+\end{defi}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PBTL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\comm{this section will be removed in the final cut}
+We can extend CTL further to include probabilistic timed properties. For that we will introduce the probabilistic temporal logic \emph{Probabilistic Branching Time Logic} (PBTL) \cite{Baier1998}.
+
+\begin{defi}[PBTL]
+The formulae of \emph{Probabilistic Branching Time Logic} (PBTL) are defined recursively
+\begin{description}
+    \item[Propositions]{Every atomic proposition $\phi$ is a formula.}
+    \item[Formulas]{If $\phi_{1}$ and $\phi_{2}$ are formulae then so are the following;
+    \begin{align*}
+        & \phi_{1} \lor \phi_{2},\ \ \phi_{1} \land \phi_{2}, \ \ \lnot \phi_{1}, \ \ \phi_{1} \Rightarrow \phi_{2},\ \ \phi_{1} \Leftrightarrow \phi_{2}, \\
+        & \left[\exists\bigcirc \phi_{1}\right]_{\sim p}, \ \
+          \left[\phi_{1} \exists\until^{\leq k} \phi_{2}\right]_{\sim p}, \ \
+          \left[\phi_{1} \exists\until \phi_{2}\right]_{\sim p}, \ \
+          \left[\exists\lozenge \phi_{1}\right]_{\sim p}, \ \
+          \left[\exists\square \phi_{1}\right]_{\sim p}, \\
+        & \left[\forall\bigcirc \phi_{1}\right]_{\sim p}, \ \
+          \left[\phi_{1} \forall\until^{\leq k} \phi_{2}\right]_{\sim p}, \ \
+          \left[\phi_{1} \forall\until \phi_{2}\right]_{\sim p}, \ \
+          \left[\forall\lozenge \phi_{1}\right]_{\sim p}, \ \
+          \left[\forall\square \phi_{1}\right]_{\sim p},
+        \end{align*}}
+\end{description}
+where $p\in[0,1]$, $\sim\in\{\geq,>\}$ and $k\in\mathbb{N}\cup\{0\}$.
+\end{defi}
+
+\begin{defi}[Semantics of PBTL]
+    \label{def:semPBTL}
+Let $q_{0}\in Q$ be a state and $\pi=\pi(0)\pi(1)\ldots$ a path of a probabilistic transition system $\mathcal{P}$, and $\phi_{1},\phi_{2}$ PBTL formulae, then the semantics of PBTL is defined as
+\begin{itemize}
+    \item{$q_{0}\models_{Adv}\phi_{1}\lor\phi_{2}$ if and only if either $q_{0}\models_{Adv}\phi_{1}$ or $q_{0}\models_{Adv}\phi_{2}$;}
+    \item{$q_{0}\models_{Adv}\phi_{1}\land\phi_{2}$ if and only if both $q_{0}\models_{Adv}\phi_{1}$ and $q_{0}\models_{Adv}\phi_{2}$;}
+    \item{$q_{0}\models_{Adv}\lnot\phi_{1}$ if and only if $q_{0}\not\models_{Adv}\phi_{1}$;}
+    \item{$q_{0}\models_{Adv}\phi_{1}\Rightarrow\phi_{2}$ if and only if $q_{0}\models_{Adv}\lnot\phi_{1} \land \phi_{2}$;}
+    \item{$q_{0}\models_{Adv}\phi_{1}\Leftrightarrow\phi_{2}$ if and only if $q_{0}\models_{Adv}(\phi_{1}\Rightarrow\phi_{2})\land(\phi_{2}\Rightarrow\phi_{1})$;}
+
+    \item{$q_{0}\models_{Adv}\left[\exists\bigcirc\phi_{1}\right]_{\sim p}$ if and only if $prob\{\pi \in Path_{ful}^\mathcal{A}(q_{0}) : \pi \models_{Adv} \bigcirc\phi_{1}\} \sim p$ for some $\mathcal{A}\in Adv$;}
+    \item{$q_{0}\models_{Adv}\left[\forall\bigcirc\phi_{1}\right]_{\sim p}$ if and only if $prob\{\pi \in Path_{ful}^\mathcal{A}(q_{0}) : \pi \models_{Adv} \bigcirc\phi_{1}\} \sim p$ for all $\mathcal{A}\in Adv$;}
+
+    \item{$q_{0}\models_{Adv}\left[\phi_{1}\exists\until^{\leq k}\phi_{2}\right]_{\sim p}$
+    if and only if $prob\{\pi\in Path_{ful}^\mathcal{A}(q_{0}) : \pi\models_{Adv}\phi_{1}\until^{\leq k} \phi_{2}\}\sim p$ for some $\mathcal{A}\in Adv$;}
+    \item{$q_{0}\models_{Adv}\left[\phi_{1}\forall\until^{\leq k} \phi_{2}\right]_{\sim p}$
+    if and only if $prob\{\pi\in Path_{ful}^\mathcal{A}(q_{0}) : \pi \models_{Adv} \phi_{1} \until^{\leq k} \phi_{2}\}\sim p$ for for all $\mathcal{A}\in Adv$;}
+
+    \item{$q_{0}\models_{Adv}\left[\phi_{1}\exists\until \phi_{2}\right]_{\sim p}$
+    if and only if $prob\{\pi\in Path_{ful}^\mathcal{A}(q_{0}) : \pi \models_{Adv} \phi_{1} \until\phi_{2}\}\sim p$ for some $\mathcal{A}\in Adv$;}
+    \item{$q_{0}\models_{Adv}\left[\phi_{1}\forall\until \phi_{2}\right]_{\sim p}$
+    if and only if $prob\{\pi\in Path_{ful}^\mathcal{A}(q_{0}) : \pi \models_{Adv} \phi_{1} \until \phi_{2}\}\sim p$ for forall $\mathcal{A}\in Adv$;}
+
+    \item{$q_{0}\models_{Adv}\left[\exists\lozenge\phi_{1}\right]_{\sim p}$ if and only if $q_{0}\models_{Adv} \left[true\ \exists\until \phi_{1}\right]_{\sim p}$;}
+    \item{$q_{0}\models_{Adv}\left[\forall\lozenge\phi_{1}\right]_{\sim p}$ if and only if $q_{0}\models_{Adv}\left[true\ \forall\until \phi_{1}\right]_{\sim p}$;}
+
+    \item{$q_{0}\models_{Adv}\left[\exists\square\phi_{1}\right]_{\sim p}$ if and only if $q_{0}\models_{Adv} \lnot \left[\lnot\ \forall\lozenge\lnot \phi_{1}\right]_{\bar{\sim} 1-p}$;}
+    \item{$q_{0}\models_{Adv}\left[\forall\square\phi_{1}\right]_{\sim p}$ if and only if $q_{0}\models_{Adv} \lnot \left[\lnot\ \exists\lozenge\lnot \phi_{1}\right]_{\bar{\sim} 1-p}$;}
+
+    \item{$\pi\models_{Adv} \bigcirc\phi_{1}$ if and only if $\pi(1)\models_{Adv}\phi_{1}$;}
+    \item{$\pi\models_{Adv} \phi_{1}\until^{\leq k}\phi_{2}$ if and only if $\pi(l)\models_{Adv}\phi_{2}$ and $\pi(i)\models_{Adv}\phi_{1}$, $i\in\{0,\ldots,l-1\}$ for some $l\leq k$;}
+    \item{$\pi\models_{Adv}\phi_{1}\until\phi_{2}$ if and only if $\pi\models_{Adv} \phi_{1}\until^{\leq k}\phi_{2}$ for some $k\geq 0$,}
+\end{itemize}
+where $p\in[0,1]$, $\sim\in\{\geq,>\}$, $k\in\mathbb{N}\cup\{0\}$ and $\bar{\geq}=>$ and $\bar{>}=\geq$.
+\end{defi}
+
+
+\begin{ex}[PBTL Examples]
+The PBTL formula
+\[
+q_{0}\models_{Adv} \left[\phi_{1}\exists\until\forall\bigcirc \phi_{2}\right]_{\geq 0.8}
+\]
+expresses that with at least $0.8$ probability, there is a path in $\mathcal{P}$ starting at state $q_{0}$ on which $\phi_{1}$ holds until it is inevitable that in the next state $\phi_{2}$ holds.
+We write
+\[
+q_{0}\models\left[\forall\square((\phi_{1}\lor\phi_{2})\land\exists\lozenge\phi_{3})\right]_{>0.1}
+\]
+to mean that with probability higher than $0.1$, for all paths starting at $q_{0}$ in $\mathcal{P}$, it holds that either $\phi_{1}$ or $\phi_{2}$ hold and eventually $\phi_{3}$ might hold too.
+\end{ex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PTCTL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\comm{this stays}
+We now extend PBTL to include clock variables and their properties.
+A zone $\zeta$ is a set of valuations satisfying the conjunction
+\[
+\bigwedge_{0\leq i\neq j\leq n} x_{i}-x_{j}\sim c_{i,j}
+\]
+where $x_{i},x_{j}\in V$, $c_{i,j}\in\mathbb{N}\cup\{\infty\}$ and $\sim\in\{<,\leq,\geq,>\}$.
+Let $Zone(X)$ be the set of zones over $X$.
+Let $Z$ be the set of \emph{formula clocks} which are disjoint from the continuous clocks in $V$. The clocks in $Z$ are assigned values by a \emph{formula clock valuation} $E : Z \rightarrow \mathbb{R}$.
+
+\begin{defi}[PTCTL \cite{Kwiatkowska2002}]
+The formulae of \emph{Probabilistic Timed Continuous Tree Logic} (PTCTL) are defined recursively
+\begin{description}
+    \item[Propositions]{Every atomic proposition $\phi$ is a formula.}
+    \item[Zones]{A zone $\zeta$ is a formula.}
+    \item[Formulas]{If $\phi_{1}$ and $\phi_{2}$ are formulae then so are the following;
+    \begin{align*}
+        & \phi_{1} \lor \phi_{2},\ \ \phi_{1} \land \phi_{2}, \ \ \lnot \phi_{1}, \ \ \phi_{1} \Rightarrow \phi_{2},\ \ \phi_{1} \Leftrightarrow \phi_{2},\ \ x.\phi_{1} \\
+        & \left[\phi_{1} \exists\until \phi_{2}\right]_{\sim p}, \ \
+          \left[\phi_{1} \forall\until \phi_{2}\right]_{\sim p},
+        \end{align*}}
+\end{description}
+where $p\in[0,1]$, $\sim\in\{\geq,>\}$ and $z\in Z$.
+\end{defi}
+
+\begin{defi}[Semantics of PTCTL]
+Let $q\in Q$ be a state of a probabilistic transition system $\mathcal{P}$, $Adv$ be a set of adversaries, $E$ be a formula clock valuation and $\phi_{1},\phi_{2}$ be PTCTL formulae, then the semantics of PTCTL is defined as
+\begin{itemize}
+    \item $q,E\models_{Adv}a$ if and only if $a$ holds in $q$;
+    \item $q,E\models_{Adv}\zeta$ if and only if $\zeta[q,E]=true$;
+    \item $q,E\models_{Adv}\phi_{1}\land\phi_{2}$ if and only if $q,E\models_{Adv}\phi_{1}$ and $q,E\models_{Adv}\phi_{2}$;
+    \item $q,E\models_{Adv}\lnot\phi_{1}$ if and only if $q,E\not\models_{Adv}\phi_{1}$;
+    \item $q,E\models_{Adv}z.\phi_{1}$ if and only if $q,E[z:=0]\models_{Adv}\phi_{1}$;
+    \item $q,E\models_{Adv}\left[\phi_{1}\exists\until\phi_{2}\right]_{\sim p}$ if and only if $prob\{w : w\in Path_{ful}^\mathcal{A}(q) \& w,E \models_{Adv}\phi_{1}\until\phi_{2}\} \sim p$ for some $\mathcal{A}\in Adv$;
+    \item $q,E\models_{Adv}\left[\phi_{1}\forall\until\phi_{2}\right]_{\sim p}$ if and only if $prob\{w : w\in Path_{ful}^\mathcal{A}(q) \& w,E \models_{Adv}\phi_{1}\until\phi_{2}\} \sim p$ for all $\mathcal{A}\in Adv$;
+    \item $w,E\models_{Adv}\phi_{1}\until\phi_{2}$ $\exists(i,t)$ in $w$ such that $w(i)+t,E+D_{w}(i)+t\models_{Adv}\phi_{2}$ and for all $(j,t')$ in $w$ such that $(j,t')\prec(i,t)$, $w(j)+t,E+D_{w}(j)+t'\models_{Adv}\phi_{1}\lor\phi_{2}$.
+\end{itemize}
+\end{defi}
+
+\begin{ex}[PTCTL Example]
+\label{ex:ptctl}
+We can say that with a probability of $0.99$ there is a path starting in $q$ on which first $x-y<10$ holds until $x-y=10$ and $\phi_{1}$ hold, and that all holds in exactly $5$ units of time.
+\[
+q,E\models_{Adv} z.\left[(x-y<10\until(x-y=10\land\phi_{1}))\land z=5\right]_{\geq0.99}.
+\]
+\end{ex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PBTLz
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\comm{this is cut}
+To be able to model check a PTCTL formula of a PTA $\mathcal{T}$, we abstract the PTA to a probabilistic transition system. But in a PTS we are able to model PBTL formulae, for that we have to translate the PTCTL formula to another extended version of PBTL, which includes a reset quantifier. We call this logic \emph{PBTL$^{z}$}.
+The set of atomic propositions for PBTL$^{z}$ is $[AP]=AP\cup\{\phi_{\zeta} : \zeta\in sub(\phi)\cap Zone(\mathcal{T},\phi)\}$, where $Zone(\mathcal{T},\phi)$ denotes the set of zones that are either in $Zone(\mathcal{T})$ (the set of all zones in invariants and guards of $\mathcal{T}$) or in $sub(\phi)$ (set of subformulae of $\phi$ including $\phi$).
+
+\begin{defi}[PBTL$^{z}$ \cite{Sproston2001}]
+The formulae of the \emph{extended Probabilistic Branching Time Logic} (PBTL$^{z}$) are defined recursively
+\begin{description}
+    \item[Propositions]{Every atomic proposition $\phi\in[AP]$ is a formula.}
+    \item[Formulas]{If $\Phi_{1}$ and $\Phi_{2}$ are formulae then so are the following;
+    \begin{align*}
+    & \Phi_{1} \lor \Phi_{2},\ \ \Phi_{1} \land \Phi_{2}, \ \ \lnot \Phi_{1}, \ \ \Phi_{1} \Rightarrow \Phi_{2},\ \ \Phi_{1} \Leftrightarrow \Phi_{2},\ \ z.\Phi_{1} \\
+    & \left[\Phi_{1} \exists\until \Phi_{2}\right]_{\sim p}, \ \
+      \left[\Phi_{1} \forall\until \Phi_{2}\right]_{\sim p},
+    \end{align*}}
+\end{description}
+where $p\in[0,1]$, $\sim\in\{\geq,>\}$ and $z\in Z$.
+\end{defi}
+
+The semantics of PBTL$^{z}$ are similar to PBTL, but defined over the adversary of a probabilistic region graph. A \emph{probabilistic region graph} \cite{Courcoubetis1993} is a probabilistic transition system with the set of states defined over equivalent regions of the related hybrid system \cite{Sproston2001}.
+
+\begin{defi}[Semantics of PBTL$^{z}$]
+The semantics of PBTL$^{z}$ follows the semantics of PBTL (see Definition~\ref{def:semPBTL}) and the below is added for the reset quantifier. Let $[\mathcal{P}_{T}]$ be a probabilistic region graph for a PTA $\mathcal{T}$, $Adv$ a set of adversaries of $[\mathcal{P}_{T}]$, then for any $q\in[Q]$ of $[\mathcal{P}_{T}]$, and a PBTL$^{z}$ formula $\Phi$ we have that
+\[
+s\models_{Adv} z.\Phi \Leftrightarrow s[z=0] \models_{Adv} \Phi
+\]
+where $s[z=0]$ is the region $(\ell,x[z=0]$) if $q=(\ell,x)$.
+\end{defi}
+
+\begin{defi}[Deriving PBTL$^{z}$ from PTCTL]
+A PBTL$^{z}$ formula $\Phi$ can be \emph{derived} from a PTCTL formula $\phi$ by applying the  rules in Table~\ref{tab:ptctl2pbtl} inductively.
+\begin{table}[H]
+\begin{center}
+    \begin{tabular}{c|c}
+        $sub(\phi)$ & $sub(\Phi)$ \\ \hline
+        true & true \\ \hline
+        $\phi$ & $\phi$ \\ \hline
+        $\zeta$ & $\phi_{\zeta}$ \\ \hline
+        $\phi_{1} \lor \phi_{2}$ & $\Phi_{1} \lor \Phi_{2}$ \\ \hline
+        $\lnot \phi_{1}$ & $\lnot \Phi_{1}$ \\ \hline
+        $x.\phi$ & $x.\Phi$ \\ \hline
+        $\left[\phi_{1} \exists\until \phi_{2}\right]_{\sim p}$ & $\left[\Phi_{1} \exists\until \Phi_{2}\right]_{\sim p}$ \\ \hline
+        $\left[\phi_{1} \forall\until \phi_{2}\right]_{\sim p}$ & $\left[\Phi_{1} \forall\until \Phi_{2}\right]_{\sim p}$ \\
+    \end{tabular}
+    \caption{Rules to derive a PBTL$^{z}$ formula from a PTCTL formula.}
+    \label{tab:ptctl2pbtl}
+\end{center}
+\end{table}
+\end{defi}
+
+\begin{ex}[PBTL$^{z}$ Example]
+Taking the PTCTL formula from Example~\ref{ex:ptctl}, we can translate it to a PBTL$^{z}$ expressing the same property, namely with a probability of $0.99$ there is a path starting in $q$ on which first $x-y<10$ holds until $x-y=10$ and $\phi_{1}$ hold, and that holds in exactly $5$ units of time.
+\[
+q,E\models_{Adv} z.\left[(\phi_{x-y<10}\until(\phi_{x-y=10}\land\phi_{1}))\land z=5\right]_{\geq0.99}.
+\]
+\end{ex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% General Verification Problems
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{General Verification Problems}
+There are some general and well known questions that are asked of a system which we look to verify.
+These problems can be asked about the whole system and in general, rather than being specific to the scenario that is represented.
+
+\begin{prob}[Reachability Problem \cite{Henzinger2000}]
+\label{prob:reach}
+Given a hybrid automaton $\mathcal{A}$ and a proposition $\phi$, is there a trajectory in the hybrid automaton that starts in an initial state and reaches a state $(l_{i},v)\in L\times\val(V)$ such that $(l_{i},v)\models\phi$?
+\end{prob}
+
+\begin{prob}[Emptiness Problem \cite{Henzinger2000}]
+\label{prob:empty}
+Given a hybrid automaton $\mathcal{A}$, is there a divergent trajectory starting in an initial state?
+\end{prob}
+
+%A \emph{timed trace} in a hybrid automaton is
+%\begin{prob}[Timed Trace Inclusion Problem \cite{Henzinger2000}]
+%\label{prob:time}
+%Given two hybrid automata $\mathcal{A}_{1}$ and $\mathcal{A}_{2}$, is every timed trace in $\mathcal{A}_{1}$ also a timed trace in $\mathcal{A}_{2}$
+%\end{prob}
+
+\begin{prob}[LTL Model Checking Problem \cite{Alur2000}]
+\label{prob:ltl}
+Given a hybrid automaton $\mathcal{A}$ and a LTL formula $\phi$, determine if $\mathcal{A}$ satisfies $\phi$.
+\end{prob}
+
+\begin{prob}[CTL Model Checking Problem \cite{Alur2000}]
+\label{prob:ctl}
+Given a hybrid automaton $\mathcal{A}$ and a CTL formula $\phi$, determine if $\mathcal{A}$ satisfies $\phi$.
+\end{prob}

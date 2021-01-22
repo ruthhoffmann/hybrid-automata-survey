@@ -1,0 +1,316 @@
+\label{sec:phatrans}
+We can translate between different types of PHAs to reach a PTA which we know can be verified.
+The chain of translations goes rectangular to multisingular to stopwatch to timed. Further details on these translations can be found in \cite{Sproston2001}.
+
+In Section~\ref{sec:dpta} we mentioned different ways which are used to verify a PTA.
+Using these translations, we can turn the given type of PHA to a PTA, which then can be verified. Note that the PHA has to be initialised to be able to apply the abstraction. This means that the set of initial states contains a single element. Our running example (Example~\ref{ex:abs}) is initialised.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRHA to PMSHA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Rectangular to Multisingular}
+The translation from a rectangular to a multisingular PHA is dependent on the maximal and minimal behaviour of the continuous variables, as we are turning the intervals of the flow functions into points. For that new continuous variables are introduced in the multisingular PHA, which represent the extremal flow behaviour, and all conditions in the PHA are adjusted accordingly.
+
+Let $\mathcal{R} = (V_{R},L,A,\Init_{R},\Inv_{R},E_{R},f_{R},t_{R})$ and $\mathcal{M} = (V_{M}, L, A, \Init_{M}, \Inv_{M}, E_{M}, f_{M}, t_{M})$ be a rectangular and a multisingular PHA respectively. We can construct $\mathcal{M}$ from $\mathcal{R}$ by the following steps
+\begin{description}
+    \item[Continuous Variables] Let $V_{R}=\{x_{1},\ldots,x_{n}\}$ and $V_{M}=\{y_{1},\ldots,y_{2n}\}$ where the $l(i)$-th variable $y_{l(i)}$ represents the lower bound of $x_{i}$ and $y_{u(i)}$ is the upper bound of $x_{i}$, and $l(i)=2i-1,\ u(i)=2i$.
+
+    \item[Initial States] For each $\ell\in L$ let $\Init_{M}(\ell)(y_{l(i)})=\Init_{M}(\ell)(y_{u(i)})=\Init_{R}(\ell)(x_{i})$.
+
+    \item[Invariant Conditions] For each $\ell\in L$ and each $x_{i}\in V_{R}$ if $\Inv_{R}(\ell)(x_{i})=[l,u]$ then
+    \begin{align*}
+    \Inv_{M}(\ell)(y_{l(i)}) & = [l,\infty), \\
+    \Inv_{M}(\ell)(y_{u(i)}) & = (-\infty,u].
+    \end{align*}
+    \item[Flow] For each $\ell\in L$ and $x_{i}\in V_{R}$ if $f_{R}(\ell)=\dot{x}_{i}\in[l,u]$ then $f_{M}(\ell)(y_{l(i)})= \dot{y}_{l(i)}\in[l,l]$ and $f_{M}(\ell)(y_{u(i)}) = \dot{y}_{u(i)}\in[u,u]$.
+
+    \item[Edges] For each $\ell\in L$, $a\in A$ and $p\in t(\ell,a)$ we can derive a set of edges and distributions in $\mathcal{M}$. To uniquely identify each distribution we have to keep track of status of the reset and guard conditions in $\mathcal{R}$.
+    We will assign a \emph{status} number $\{1,\ldots,4\}$ to each variable $x_{i}$ in $\mathcal{R}$ as follows, let $x_{i}$ have bounds $y_{l(i)}$ and $y_{u(i)}$, and let $[gl_{i},gu_{i}]\in g_{R}(e)(x_{i})$, for $e=(\ell,a,\ell')\in E_{R}$ then
+    \begin{enumerate}
+        \item $\stat(x_{i})=1$ if $y_{l(i)} < gl_{i}$ and $y_{u(i)} \leq gu_{i}$;
+        \item $\stat(x_{i})=2$ if $y_{l(i)} < gl_{i}$ and $y_{u(i)} > gu_{i}$;
+        \item $\stat(x_{i})=3$ if $y_{l(i)} \geq gl_{i}$ and $y_{u(i)} \leq gu_{i}$;
+        \item $\stat(x_{i})=4$ if $y_{l(i)} \geq gl_{i}$ and $y_{u(i)} > gu_{i}$.
+    \end{enumerate}
+    We can now identify the reset conditions for $\mathcal{M}$ and mark them with the status. Let $e=(\ell,a,\ell')\in E_{R}$ with $r_{R}(e)$ and $g_{R}(e)$ being the reset and guard conditions. Let $x_{i}\in[l_{i},u_{i}]\in g_{R}(e)$ and should $x_{i}$ be
+    reset on $e$ then it will be of the form $x_{i}\in[l_{i}',u_{i}']\in r_{R}(e)$.
+    \begin{itemize}
+        \item If $x_{i}$ is reset then $y_{l(i)}=l_{i}'\in r_{M}^{st}(e)$ and $y_{u(i)}=u_{i}'\in r_{M}^{st}(e)$ for each $st\in\{1,\ldots,4\}$.
+        \item If $x_{i}$ is not reset then
+            \begin{itemize}
+                \item if $\stat(x_{i})=1$ then $y_{l(i)}=l_{i}\in r_{M}^{1}(e)$ and $y_{u(i)}\notin r_{M}^{1}(e)$;
+                \item if $\stat(x_{i})=2$ then $y_{l(i)}=l_{i}\in r_{M}^{2}(e)$ and $y_{u(i)}=u_{i}\in r_{M}^{2}(e)$;
+                \item if $\stat(x_{i})=3$ then $y_{l(i)}\notin r_{M}^{3}(e)$ and $y_{u(i)}\notin r_{M}^{3}(e)$;
+                \item if $\stat(x_{i})=4$ then $y_{l(i)}\notin r_{M}^{4}(e)$ and $y_{u(i)}=u_{i}\in r_{M}^{4}(e)$.
+            \end{itemize}
+    \end{itemize}
+    We utilise a similar system to establish the guard conditions in $\mathcal{M}$. For every $x_{i}\in V_{R}$, if $x_{i}\in[l,u]\in g_{R}(e)$ then
+        \begin{itemize}
+            \item if $\stat(x_{i})=1$ then $y_{l(i)}\in(-\infty,l)\in g_{M}^{1}(e)$ and $y_{u(i)}\in[l,u]\in g_{M}^{1}(e)$;
+            \item if $\stat(x_{i})=2$ then $y_{l(i)}\in(-\infty,l)\in g_{M}^{2}(e)$ and $y_{u(i)}\in(u,\infty)\in g_{M}^{2}(e)$;
+            \item if $\stat(x_{i})=3$ then $y_{l(i)}\in[l,u]\in g_{M}^{3}(e)$ and $y_{u(i)}\in[l,u]\in g_{M}^{3}(e)$;
+            \item if $\stat(x_{i})=4$ then $y_{l(i)}\in[l,u]\in g_{M}^{4}(e)$ and $y_{u(i)}\in(u,\infty)\in g_{M}^{4}(e)$.
+        \end{itemize}
+
+    \item[Probabilistic Transition] Through the classification of the guard and reset conditions we can now calculate the probabilistic transitions. We say that we obtain $e=(\ell,a,\ell')\in E_{M}$ with $g_{M}^{st}(e_{M})$ and $r_{M}^{st}(e_{M})$ from $e=(\ell,a,\ell')\in E_{R}$ with $g_{R}(e_{R})$ and $r_{R}(e_{R})$, and denote this by $e\leadsto e^{st}$, then
+    \[
+    t_{M}^{st}(\ell,a)(\ell') = \sum_{\substack{t_{R}(\ell,a)(\ell')\neq0 \land\\ e\leadsto e^{st}}} t_{R}(\ell,a)(\ell')
+    \]
+    for each $st\in\{1,\ldots,4\}$.
+\end{description}
+
+
+
+\begin{ex}
+    \label{ex:rect2ms}
+Take the rectangular hybrid automaton defined in Example~\ref{ex:abs}. Using the above description we can translate that hybrid automaton to a multisingular hybrid automaton $\mathcal{M}=(V,L,A,\Init,\Inv,E,f,t)$ where the components are
+\begin{itemize}
+    \item $V=\{x_{l},x_{u},z_{l},z_{u}\}$
+    \item $L=\{\ell_{0},\ell_{1},\ell_{2},\ell_{3},\ell_{4},\ell_{5}\}$
+    \item $A=\{\text{TakeOff, Move, Stop, Land}\}$
+    \item $\Init=\{(\ell_{0},(0,0,0,0))\}$
+    \item The invariant conditions are
+    \begin{align*}\Inv(\ell_{0})=&\Inv(\ell_{5})=(\mathbb{R},\mathbb{R},\mathbb{R},\mathbb{R})\\
+        \Inv(\ell_{1})=&(\mathbb{R},\mathbb{R},\mathbb{R},(-\infty,h]), \\
+        \Inv(\ell_{2})=&\Inv(\ell_{3})=(\mathbb{R},(-\infty,l],[h-\varepsilon,\infty),(-\infty,h+\varepsilon]), \\
+        \Inv(\ell_{4})=& (\mathbb{R},\mathbb{R},[0,\infty),\mathbb{R})
+    \end{align*}
+    \item The flow conditions are
+    \begin{align*}
+        f(\ell_{0})=&f(\ell_{5})=\{\dot{x}_{l}=\dot{x}_u=\dot{z}_{l}=\dot{z}_{u}=0\},\\
+        f(\ell_{1})=&\{\dot{x}_{l}=\dot{x}_{u}=0,\dot{z}_{l}=\dot{z}_{u}=v_{z1}\},\\
+        f(\ell_{2})=&\{\dot{x}_{l}=\dot{x}_{u}=v_{x1},\dot{z}_{l}=0,\dot{z}_{u}=v_{z2}\},\\
+        f(\ell_{3})=&\{\dot{x}_{l}=\dot{x}_{u}=v_{x2},\dot{z}_{l}=0,\dot{z}_{u}=v_{z2}\},\\
+        f(\ell_{4})=&\{\dot{x}_{l}=\dot{x}_{u}=0,\dot{z}_{l}=\dot{z}_{u}=-v_{z1}\}
+    \end{align*}
+    \item The edges, reset conditions, guard conditions and probability distributions are as follows
+    \begin{itemize}
+        \item The edge $e_{0}=(\ell_{0},)(\text{TakeOff}, \ell_{1})$ from the original hybrid automaton is the same in $\mathcal{M}$ due to its trivial guard and reset conditions for all variables and its Dirac distribution.
+        Thus in $\mathcal{M}$, $g(e_{0})=(\mathbb{R},\mathbb{R},\mathbb{R},\mathbb{R})$, $r(e_{0})=\emptyset$ and $t(\ell_{0},)(\text{TakeOff})=\{1:\ell_{1}\}$.
+        \item For $(\ell_{1},\text{Move})$ we find that $\stat(x)=3$ and similarily $\stat(z)=3$, the guard and reset conditions for $x_{l},x_{u}$ are trivially induced. Then as $z$ is not reset, $z_{l}$ and $z_{u}$ will not either, and finally as $\stat(z)=3$ the guard conditions are $z_{l}=h$ and $z_{u}=h$.
+        Thus $g(\ell_{1},\text{Move},\ell_{2})=g(\ell_{1},\text{Move},\ell_{3})=(\mathbb{R},\mathbb{R},h,h)$ and $r(\ell_{1},\text{Move},\ell_{2})=r(\ell_{1},\text{Move},\ell_{3})=\emptyset$.
+        Based on that the probability transition function stays the same for $t(\ell_{1},\text{Move})=\{0.6:\ell_{2},0.4:\ell_{3}\}$.
+        \item $(\ell_{2},\text{Stop})$ is transformed similarly as the last edge, with $\stat(x)=\stat(z)=3$. So $g(\ell_{2},\text{Stop},\ell_{4})=(l,l,\mathbb{R},\mathbb{R})$ and $r(\ell_{2},\text{Stop},\ell_{4})=\emptyset$, and $t(\ell_{2},\text{Stop})=\{1:\ell_{4}\}$.
+        \item $(\ell_{3},\text{Stop})$ is translated as $(\ell_{2},\text{Stop})$, thus
+        $g(\ell_{3},\text{Stop},\ell_{4})=(l,l,\mathbb{R},\mathbb{R})$ and $r(\ell_{3},\text{Stop},\ell_{4})=\emptyset$, and $t(\ell_{3},\text{Stop})=\{1:\ell_{4}\}$.
+        \item For $(\ell_{4},\text{Land})$ is translated through $\stat(x)=\stat(z)=3$ thus the reset maps are $r(\ell_{4},\text{Land},\ell_{0})=r(\ell_{4},\text{Land},\ell_{5})=(0,0,0,0)$ and the guard conditions are $g(\ell_{4},\text{Land},\ell_{0})=g(\ell_{4},\text{Land},\ell_{5})=(\mathbb{R},\mathbb{R},0,0)$ and the probability transition function is $t(\ell_{4},\text{Land})=\{0.99:\ell_{0},0.01:\ell_{5}\}$.
+    \end{itemize}
+\end{itemize}
+
+\end{ex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PMSHA to PSWA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Multisingular To Stopwatch}
+From a multisingular PHA $\mathcal{M} = (V,L,A,\Init_{M},\Inv_{M},E,f_{M},t)$ we are going to construct a probabilistic stopwatch automaton $\mathcal{W} = (V,L,A,\Init_{W},\Inv_{W},E,f_{W},t)$. For this abstraction to work, we need to introduce a scaling factor for each variable at each location.
+
+\begin{defi}[Scaling Factor]
+    In $\mathcal{M}$ for all $\ell\in L$, $x_{i}\in V$ of $\mathcal{M}$ if $f_{M}(\ell)=\dot{x}\in[k,k]$ for some $k\in\mathbb{Z}$ then the \emph{scaling factor} of $x_{i}$ in $\ell$ is $k_{i}^{\ell}$, where $k_{i}^{\ell}=k$ if $k\neq0$ and $k_{i}^{\ell}=1$ if $k=0$.
+\end{defi}
+The scaling factor will help with skewing the flow functions to represent clocks (have flow equal to $1$). The construction of $\mathcal{W}$ is done as follows
+\begin{description}
+    \item[Initial States] Let $\ell\in L$ such that $\Init_{M}(\ell)\neq\emptyset$, and $\Init_{M}(\ell)\in\mathbb{Z}^{n}$. For every $x_{i}\in V$ if $x_{i}\in[k,k]\in \Init_{M}(\ell)$ for some $k\in\mathcal{Z}$ then let
+    $x_{i}\in[\frac{k}{k_{i}^{\ell}},\frac{k}{k_{i}^{\ell}}]\in \Init_{W}(\ell)$.
+    \item[Invariant Conditions] For each $\ell\in L$ and each $x_{i}\in V$ if the lower and upper bounds of $x_{i}$ in $\Inv_{M}(\ell)$ are $k_{1},k_{2}\in\mathbb{Z}$ respectively, then the lower and upper bounds of $x_{i}$ in $\Inv_{W}(\ell)$ are
+    $\frac{k_{1}}{k_{i}^{\ell}},\frac{k_{2}}{k_{i}^{\ell}}$ respectively, and the limits of the interval are the same (open is mapped to open and closed is mapped to closed).
+    \item[Flow] For all $\ell\in L$ and all $x_{i}\in V$ if $f_{M}(\ell)=\dot{x}_{i}\in[0,0]$ then $f_{W}(\ell)=\dot{x}_{i}\in[0,0]$ else $f_{W}(\ell)=\dot{x}_{i}\in[1,1]$.
+    \item[Edge Conditions] While the edge set is the same in both automata, we need to rescale the reset and guard conditions. Let $e=(\ell,a,\ell')\in E$, then the reset conditions are derived from $r_{M}(e)(x_{i})=k\in\mathbb{Z}$ then $r_{W}(e)(x_{i})= \frac{k}{k_{i}^{\ell'}}$, for each $x_{i}\in V$. The guard conditions are scaled similarly as the invariant conditions, namely for each $x_{i}\in V$ if the lower and upper bounds of
+    $x_{i}$ in $g_{M}(e)$ are $k_{1},k_{2}\in\mathbb{Z}$ respectively, then the lower and upper bounds of $x_{i}$ in $g_{W}(e)$ are $\frac{k_{1}}{k_{i}^{\ell}},\frac{k_{2}}{k_{i}^{\ell}}$ respectively, and the limits of the interval are the same (open is mapped to open and closed is mapped to closed).
+\end{description}
+
+Note that for this translation to work, the following restriction has to be added to the invariant conditions of the multisingular PHA $\mathcal{M}$. At any location $\ell\in L$ any variable with positive (negative) slope has a finite lower (upper) bound in the invariant. This restriction can be enforced without loss of generality by replacing infinite bounds with the minimal and maximal values the variable can achieve globally \cite{Olivero1994}.
+
+\begin{defi}[[Equivalence between $\mathcal{W}$ and $\mathcal{M}$ \cite{Henzinger1995}]
+Let $\mathcal{M}$ be an initialised multisingular PHA, let $\mathcal{W}$ be an initialised probabilistic stopwatch automaton derived from $\mathcal{M}$ as described above, let
+ $\mathcal{P}_{M}=(Q^{M},Q^{M}_{0},A^{M},t^{M})$ and
+ $\mathcal{P}_{W}=(Q^{W},Q^{W}_{0},A^{W},t^{W})$ be their probabilistic transitions systems (see Definition~\ref{def:pha2pts}) and let $\{k_{i}^{\ell}\in\mathbb{Z} : \ell\in L_{M}, x_{i}\in X\}$ be the set of scaling factors of $\mathcal{M}$. Then let $\sigma : Q^{W} \rightarrow Q^{M}$ be the
+ bijection such that for each $(\ell, \val(x))\in Q^{W}$ we have $\sigma(\ell,\val(x))=(\ell,\val(y))$ where $\val(y)_{i} = k_{i}^{\ell}\val(x)_{i}$ for each $x_{i}\in X$.
+ The relation $\sim_{\sigma}$ is an equivalence on $Q^{W}\cup Q^{M}$ such that $s\sim_{\sigma}s'$ if and only if $\sigma(s)=s'$ for $s\in Q^{M}$ and $s'\in Q^{W}$.
+\end{defi}
+
+\begin{prop}[\cite{Sproston2001}]
+Let $\mathcal{M}$ be an initialised multisingular PHA and let $\mathcal{W}$ be the initialised stopwatch automaton constructed from $\mathcal{M}$ using the method described above. Then the equivalence relation $\sim_{\sigma}$ is a bisimulation between $\mathcal{P}_{M}$ and $\mathcal{P}_{W}$.
+\end{prop}
+
+
+\begin{ex}
+\label{ex:ms2sw}
+We are going to translate the resulting automaton from Example~\ref{ex:rect2ms} into a probabilistic stopwatch automaton. For that we need to restrict the invariant conditions of our multisingular hybrid automaton to
+\begin{align*}
+    \Inv(\ell_{0})=&\Inv(\ell_{5})=(\mathbb{R},\mathbb{R},\mathbb{R},\mathbb{R})\\
+    \Inv(\ell_{1})=&(\mathbb{R},\mathbb{R},[0,\infty),[0,h]), \\
+    \Inv(\ell_{2})=&\Inv(\ell_{3})=([0,\infty),[0,l],[h-\varepsilon,\infty),[0,h+\varepsilon]), \\
+    \Inv(\ell_{4})=& (\mathbb{R},\mathbb{R},[0,h+\varepsilon],(-\infty,h+\varepsilon]).
+\end{align*}
+
+Further we need to calculate the scaling factors of the continuous variables in each location, see Table~\ref{tab:sf}. Now we can utilise these factors to construct a probabilistic stopwatch automaton from the multisingular probabilistic hybrid automaton in Example~\ref{ex:rect2ms} (with adjusted invariant conditions).
+\begin{table}
+\begin{center}
+    \begin{tabular}{c|c|c|c|c|c|c}
+                & $\ell_{0}$ & $\ell_{1}$ & $\ell_{2}$ & $\ell_{3}$ & $\ell_{4}$ & $\ell_{5}$ \\ \hline
+        $x_{l}$ & $1$ & $1$ & $v_{x1}$ & $v_{x2}$ & $1$ & $1$ \\ \hline
+        $x_{u}$ & $1$ & $1$ & $v_{x1}$ & $v_{x2}$ & $1$ & $1$ \\ \hline
+        $z_{l}$ & $1$ & $v_{z1}$ & $1$ & $1$ & $-v_{z1}$ & $1$ \\ \hline
+        $z_{u}$ & $1$ & $v_{z1}$ & $v_{z2}$ & $v_{z2}$ & $-v_{z1}$ & $1$
+
+    \end{tabular}
+    \caption{Table of scaling factors for translation of the running example.}
+    \label{tab:sf}
+\end{center}
+\end{table}
+\begin{itemize}
+    \item $V=\{x_{l},x_{u},z_{l},z_{u}\}$
+    \item $L=\{\ell_{0},\ell_{1},\ell_{2},\ell_{3},\ell_{4},\ell_{5}\}$
+    \item $A=\{\text{TakeOff, Move, Stop, Land}\}$
+    \item $\Init=\{(\ell_{0},(0,0,0,0))\}$
+    \item The invariants for the locations are as above stated
+     \begin{align*}
+        \Inv(\ell_{0})=&\Inv(\ell_{5})=(\mathbb{R},\mathbb{R},\mathbb{R},\mathbb{R})\\
+        \Inv(\ell_{1})=&(\mathbb{R},\mathbb{R},[0,\infty),[0,\frac{h}{v_{z1}}]), \\
+        \Inv(\ell_{2})=&([0,\infty),[0,\frac{l}{v_{x1}}],[h-\varepsilon,\infty),[0,\frac{h+\varepsilon}{v_{z2}}]), \\
+        \Inv(\ell_{3})=&([0,\infty),[0,\frac{l}{v_{x2}}],[h-\varepsilon,\infty),[0,\frac{h+\varepsilon}{v_{z2}}]), \\
+        \Inv(\ell_{4})=&(\mathbb{R},\mathbb{R},[-\frac{h+\varepsilon}{v_{z1}},0],[-\frac{h+\varepsilon}{v_{z1}},\infty))
+    \end{align*}
+    \item $E=\{e_{0}=(\ell_{0},\text{TakeOff},\ell_{1}), e_{1}=(\ell_{1},\text{Move},\ell_{2}), e_{2}=(\ell_{1},\text{Move},\ell_{3}), e_{3}=(\ell_{2},\text{Stop},\ell_{4}), e_{4}=(\ell_{3},\text{Stop},\ell_{4}), e_{5}=(\ell_{4},\text{Land},\ell_{5}), e_{6}=(\ell_{4},\text{Land},\ell_{0})\}$ is the set of edges, which is the same as in the multisingular automaton before. The guard conditions are defined as
+    \begin{align*}
+        g(e_{0})= & (\mathbb{R},\mathbb{R},\mathbb{R},\mathbb{R}) \\
+        g(e_{1})= & g(e_{2}) = (\mathbb{R},\mathbb{R},\frac{h}{v_{z1}},\frac{h}{v_{z1}}) \\
+        g(e_{3})= & (\frac{l}{v_{x1}}, \frac{l}{v_{x1}}, \mathbb{R},\mathbb{R}) \\
+        g(e_{4})= & (\frac{l}{v_{x2}}, \frac{l}{v_{x2}}, \mathbb{R},\mathbb{R}) \\
+        g(e_{5})= & g(e_{6})=(\mathbb{R},\mathbb{R},0,0),
+    \end{align*}
+    and the reset maps are
+    \begin{align*}
+        r(e_{0})= & (x_{l},x_{u},\frac{z_{l}}{v_{z1}},\frac{z_{u}}{v_{z1}})\\
+        r(e_{1})= & (\frac{x_{l}}{v_{x1}},\frac{x_{u}}{v_{x1}},z_{l},\frac{z_{u}}{v_{z2}}) \\
+        r(e_{2})= & (\frac{x_{l}}{v_{x2}},\frac{x_{u}}{v_{x2}},z_{l},\frac{z_{u}}{v_{z2}}) \\
+        r(e_{3})= & r(e_{4})=(x_{l},x_{u},-\frac{z_{l}}{v_{z1}},-\frac{z_{u}}{v_{z1}})\\
+        r(e_{5})=& r(e_{6})=(0,0,0,0).
+    \end{align*}
+    \item We transform the flow conditions to the following
+    \begin{align*}
+        f(\ell_{0})=f(\ell_{5})=& \{\dot{x}_{l}=\dot{x}_{u}=\dot{z}_{l}=\dot{z}_{u}=0\} \\
+        f(\ell_{1})=f(\ell_{4})=& \{\dot{x}_{l}=\dot{x}_{u}=0,\dot{z}_{l}=\dot{z}_{u}=1\} \\
+        f(\ell_{2})=f(\ell_{3})=& \{\dot{x}_{l}=\dot{x}_{u}=\dot{z}_{u}=1,\dot{z}_{l}=0\}.
+    \end{align*}
+    \item The probabilistic transition function is the same as for the multisingular probabilistic hybrid automaton.
+\end{itemize}
+\end{ex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PSWA to PTA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Stopwatch To Timed}
+We will now translate a probabilistic stopwatch automaton $\mathcal{W} = (V,A,\Init_{W},\Inv_{W},E_{W},f_{W},t_{W})$ to a probabilistic timed automaton $\mathcal{T} = (V,A,\Init_{T},\Inv_{T},E_{T},f_{T},t_{T})$. This translation will turn all the remaining flow conditions from 0 to 1. For that we introduce a new variable $\bot$ which represents abstract time, and with that we will extend model, as follows;
+
+\begin{description}
+\item[Locations] Let $K$ be the set of integer constants of the guard, reset, initial or invariant  conditions of $\mathcal{W}$, let $K_{\bot}=K\cup\{\bot\}$. Then $L_{T}=L_{W}\times \Gamma$, where $\Gamma$ is a set of functions of the form $\gamma:V\rightarrow K_{\bot}$. For a given
+$\ell\in L_{W}$ the location in $\mathcal{T}$ is of the form $(\ell,\gamma)\in L_{T}$, where for each $x_{i}\in V$ if $f_{W}(\ell)=\dot{x}_{i}=1$ then $\gamma(x_{i}) = \bot$, otherwise
+$\gamma(x_{i})\in K$.
+\item[Initial States] For all $(\ell,\gamma)\in L_{T}$ if for each $x_{i}\in V$ either $\gamma(x_{i}) = \bot$, or $\gamma(x_{i}) = \Init_{W}(\ell)(x_{i})$ then let $\Init_{T}(\ell,\gamma) = \Init_{W}(\ell)$ otherwise $\Init_{T}(\ell,\gamma)=\emptyset$.
+\item[Invariant Conditions] For all $(\ell,\gamma)\in L_{T}$, for each $x_{i}\in V$ if
+    \begin{itemize}
+        \item $\gamma(x_{i}) = \bot$ then $\Inv_{T}(\ell,\gamma)(x_{i}) = \Inv_{W}(\ell)(x_{i})$.
+        \item $\gamma(x_{i}) \in \Inv_{W}(\ell)(x_{i})$ then $\Inv_{T}(\ell,\gamma)(x_{i})=\mathbb{R}_{\geq 0}$
+        \item $\gamma(x_{i}) \notin \Inv_{W}(\ell)(x_{i})$ then $\Inv_{T}(\ell,\gamma)(x_{i})=\emptyset$.
+    \end{itemize}
+\item[Edge Conditions] We derive the edge set for $\mathcal{T}$ as follows, let $e_{W}=(\ell,a,\ell')\in E_{W}$ then there exists $((\ell,\gamma), a, (\ell',\gamma'))\in E_{T}$ where for every $x_{i}\in V$ either
+    \begin{itemize}
+        \item $f_{W}(\ell')=\dot{x}_{i} = 1$ and $\gamma'(x_{i}) = \bot$
+        \item $f_{W}(\ell)=\dot{x}_{i}=1$, $f_{W}(\ell')=\dot{x}_{i}=0$ and $\gamma'(x_{i})=r_{W}(e_{W})(x_{i})$
+        \item $f_{W}(\ell)=\dot{x}_{i}=0$, $f_{W}(\ell')=\dot{x}_{i}=0$, $x_{i}$ does not get reset and $\gamma'(x_{i})=\gamma(x_{i})$
+        \item $f_{W}(\ell)=\dot{x}_{i}=0$, $f_{W}(\ell')=\dot{x}_{i}=0$, $r_{W}(e_{W})(x_{i})$ exists and $\gamma'(x_{i})=r_{W}(e_{W})(x_{i})$.
+    \end{itemize}
+The reset maps stay the same, and are distributed onto the new edges accordingly to $\ell'\in L_{W}$. The guard conditions on an edge for a variable $x_{i}$ is the same as in the stopwatch automaton if $\gamma(x_{i})=\bot$, otherwise if $\gamma(x_{i})\in g_{W}(e)$ then let $g_{T}(e)(x_{i})=\mathbb{R}_{\geq 0}$, else $x_{i}$ is unguarded.
+\item[Probability transitions] Let $t_{W}(\ell,a) = \{p_{W}^{1},\ldots,p_{W}^{l}\}$ be the probabilities from $\ell\in L_{W}$, and $t_{T}((\ell,\gamma),a) = \{p_{T}^{1},\ldots,p_{T}^{l}\}$.
+Then for each $\ell'\in L_{W}$ in $(\ell,a,\ell')\in E$ there exists a $(\ell',\gamma)\in L_{T}$ according to the construction of the edges above and then $p_{T}^{j}(\ell',\gamma) = p_{W}^{j}(\ell')$, for $1\leq j \leq l$.
+\end{description}
+
+Note that $\bot$ can be seen as a abstract time passing variable.
+
+\begin{defi}[Equivalence between $\mathcal{T}$ and $\mathcal{W}$ \cite{Henzinger1995}]
+Let $\mathcal{W}$ be an initialised probabilistic stopwatch automaton, let $\mathcal{T}$ be a probabilistic timed automaton derived from $\mathcal{W}$ as described above, let
+$\mathcal{P}_{W}=(Q^{W},Q^{W}_{0},A^{W},t^{W})$ and $\mathcal{P}_{T}=(Q^{T},Q^{T}_{0},A^{T},t^{T})$ be their associated probabilistic transition systems (see Definition~\ref{def:pha2pts}). Then
+$\tau : Q^{T}\rightarrow Q^{W}$ is defined such that for each $((\ell,\gamma),\val(v))\in Q^{T}$, we have $\tau((\ell,\gamma),\val(x))=(\ell,\val(y))$ where $\val(x)_{i}=\val(y)_{i}$ if
+$\gamma(x_{i})=\bot$ and otherwise $\val(y_{i})=\gamma(x_{i})$, for each $x_{i}\in V$. The relation $\sim_{\tau}$ is an equivalence on $Q^{T}\cup Q^{W}$ such that $q\sim_{\tau}q'$ if and only if  $\tau(q)=q'$ for $q\in Q^{T}$ and $q'\in Q^{W}$.
+\end{defi}
+
+\begin{prop}[\cite{Sproston2001}]
+Let $\mathcal{W}$ be an initialised probabilistic stopwatch automaton, and let $\mathcal{T}$ be the probabilistic timed automaton derived from $\mathcal{W}$ using the method above. Then the equivalence $\sim_{\tau}$ is a bisimulation between $\mathcal{P}_{W}$ and $\mathcal{P}_{T}$.
+\end{prop}
+
+
+\begin{ex}
+We will now translate the stopwatch automaton resulting in Example~\ref{ex:ms2sw} to a PTA.
+\begin{itemize}
+    \item First we calculate a preliminary set of locations. We will extend the set once the initial state and edges have been determined.
+    \begin{align*}
+    L=\{&(\ell_{0},(\gamma(x_{l}),\gamma(x_{u}),\gamma(z_{l}),\gamma(z_{u}))), \\
+        &(\ell_{1},(\gamma(x_{l}),\gamma(x_{u}),\bot,\bot)), \\
+        &(\ell_{2},(\bot,\bot,\gamma(z_{l}),\bot)), \\
+        &(\ell_{3},(\bot,\bot,\gamma(z_{l}),\bot)), \\
+        &(\ell_{4},(\gamma(x_{l}),\gamma(x_{u}),\bot,\bot)), \\
+        &(\ell_{5},(\gamma(x_{l}),\gamma(x_{u}),\gamma(z_{l}),\gamma(z_{u})))\}
+    \end{align*}
+    \item $\Init=(\ell_{0},(0,0,0,0))$
+    \item We can find the set of edges to be
+    \begin{align*}
+    E=\{e_{0}=&((\ell_{0},(0,0,0,0)),\text{TakeOff},(\ell_{1},(0,0,\bot,\bot))), \\
+        e_{1}=&((\ell_{1},(0,0,\bot,\bot)),\text{Move},(\ell_{2},(\bot,\bot,\frac{h}{v_{z1}}))),\\
+        e_{2}=&((\ell_{1},(0,0,\bot,\bot)),\text{Move},(\ell_{3},(\bot,\bot,\frac{h}{v_{z1}}))),\\
+        e_{3}=&((\ell_{2},(\bot,\bot,\frac{h}{v_{z1}})),\text{Stop},(\ell_{4},(\frac{l}{v_{x1}},\frac{l}{v_{x1}},\bot,\bot))),\\
+        e_{4}=&((\ell_{3},(\bot,\bot,\frac{h}{v_{z1}})),\text{Stop},(\ell_{4},(\frac{l}{v_{x2}},\frac{l}{v_{x2}},\bot,\bot))),\\
+        e_{5}=&(\ell_{4},(\frac{l}{v_{x1}},\frac{l}{v_{x1}},\bot,\bot)),\text{Land},(\ell_{5},(0,0,0,0))),\\
+        e_{6}=&(\ell_{4},(\frac{l}{v_{x1}},\frac{l}{v_{x1}},\bot,\bot)),\text{Land},(\ell_{0},(0,0,0,0))),\\
+        e_{7}=&(\ell_{4},(\frac{l}{v_{x2}},\frac{l}{v_{x2}},\bot,\bot)),\text{Land},(\ell_{5},(0,0,0,0))),\\
+        e_{8}=&(\ell_{4},(\frac{l}{v_{x2}},\frac{l}{v_{x2}},\bot,\bot)),\text{Land},(\ell_{0},(0,0,0,0)))\},
+    \end{align*}
+    then the guard conditions are
+    \begin{align*}
+        g(e_{0})= & (\mathbb{R},\mathbb{R},\mathbb{R},\mathbb{R}) \\
+        g(e_{1})= & g(e_{2}) = (\mathbb{R},\mathbb{R},\frac{h}{v_{z1}},\frac{h}{v_{z1}}) \\
+        g(e_{3})= & (\frac{l}{v_{x1}}, \frac{l}{v_{x1}}, \mathbb{R},\mathbb{R}) \\
+        g(e_{4})= & (\frac{l}{v_{x2}}, \frac{l}{v_{x2}}, \mathbb{R},\mathbb{R}) \\
+        g(e_{5})= & g(e_{6})=g(e_{7})=g(e_{8})=(\mathbb{R},\mathbb{R},0,0),
+    \end{align*}
+    and the reset maps are
+    \begin{align*}
+        r(e_{0})=&(x_{l},x_{u},\frac{z_{l}}{v_{z1}},\frac{z_{u}}{v_{z1}})\\
+        r(e_{1})=&(\frac{x_{l}}{v_{x1}},\frac{x_{u}}{v_{x1}},z_{l},\frac{z_{u}}{v_{z2}}) \\
+        r(e_{2})=&(\frac{x_{l}}{v_{x2}},\frac{x_{u}}{v_{x2}},z_{l},\frac{z_{u}}{v_{z2}}) \\
+        r(e_{3})=&r(e_{4})=(x_{l},x_{u},-\frac{z_{l}}{v_{z1}},-\frac{z_{u}}{v_{z1}})\\
+        r(e_{5})=&r(e_{6})=r(e_{7})=r(e_{8})=(0,0,0,0).
+    \end{align*}
+    \item So the set of locations is
+    \begin{align*}
+        L=\{&(\ell_{0},(0,0,0,0)),(\ell_{1},(0,0,\bot,\bot)),(\ell_{2},(\bot,\bot,\frac{h}{v_{z1}},\bot)),\\
+        &(\ell_{3},(\bot,\bot,\frac{h}{v_{z1}},\bot)),(\ell_{4},(\frac{l}{v_{x1}},\frac{l}{v_{x1}},\bot,\bot)),(\ell_{4},(\frac{l}{v_{x2}},\frac{l}{v_{x2}},\bot,\bot)),\\
+        &(\ell_{5},(0,0,0,0))\}
+    \end{align*}
+    \item The invariant conditions for each location are computed to be
+    \begin{align*}
+            \Inv(\ell_{0},(0,0,0,0))&=\Inv(\ell_{5},(0,0,0,0))=\emptyset \\
+            \Inv(\ell_{1},(0,0,\bot,\bot))&=(\mathbb{R}_{\geq0},\mathbb{R}_{\geq0},[0,\infty),[0,\frac{h}{v_{z1}}]) \\
+            \Inv(\ell_{2},(\bot,\bot,\frac{h}{v_{z1}},\bot))&=([0,\infty),[0,\frac{l}{v_{x1}}],\mathbb{R}_{\geq0},[0,\frac{h+\varepsilon}{v_{z2}}]) \\
+            \Inv(\ell_{3},(\bot,\bot,\frac{h}{v_{z1}},\bot))&=([0,\infty),[0,\frac{l}{v_{x2}}],\mathbb{R}_{\geq0},[0,\frac{h+\varepsilon}{v_{z2}}]) \\
+            \Inv(\ell_{4},(\frac{l}{v_{x1}},\frac{l}{v_{x1}},\bot,\bot))&=(\mathbb{R}_{\geq0},\mathbb{R}_{\geq0},[-\frac{h+\varepsilon}{v_{z1}},0],[-\frac{h+\varepsilon}{v_{z1}},0]) \\
+            \Inv(\ell_{4},(\frac{l}{v_{x2}},\frac{l}{v_{x2}},\bot,\bot))&=(\mathbb{R}_{\geq0},\mathbb{R}_{\geq0},[-\frac{h+\varepsilon}{v_{z1}},0],[-\frac{h+\varepsilon}{v_{z1}},0])
+    \end{align*}
+    \item As this resulting automaton is a probabilistic timed automaton, the flow condition in each location, for all variables is $1$.
+    \item The probabilistic transition function for each edge is computed to be
+    \begin{align*}
+        t((\ell_{0},(0,0,0,0)),\text{TakeOff})&=\{1:(\ell_{1},(0,0,\bot,\bot))\} \\
+        t((\ell_{1},(0,0,\bot,\bot)),\text{Move})&=\{0.6:(\ell_{2},(\bot,\bot,\frac{h}{v_{z1}},\bot)),0.4:(\ell_{3},(\bot,\bot,\frac{h}{v_{z1}},\bot))\}\\
+        t((\ell_{2},(\bot,\bot,\frac{h}{v_{z1}},\bot)),\text{Stop})&=\{1:(\ell_{4},(\frac{l}{v_{x1}},\frac{l}{v_{x1}},\bot,\bot))\} \\
+        t((\ell_{3},(\bot,\bot,\frac{h}{v_{z1}},\bot)),\text{Stop})&=\{1:(\ell_{4},(\frac{l}{v_{x2}},\frac{l}{v_{x2}},\bot,\bot))\} \\
+        t((\ell_{4},(\frac{l}{v_{x1}},\frac{l}{v_{x1}},\bot,\bot)),\text{Land})&=\{0.99:(\ell_{0},(0,0,0,0)),0.01:(\ell_{5},(0,0,0,0))\} \\
+        t((\ell_{4},(\frac{l}{v_{x2}},\frac{l}{v_{x2}},\bot,\bot)),\text{Land})&=\{0.99:(\ell_{0},(0,0,0,0)),0.01:(\ell_{5},(0,0,0,0))\}.
+    \end{align*}
+\end{itemize}
+\end{ex}
